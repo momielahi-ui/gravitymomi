@@ -71,12 +71,16 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
         if (error) throw error;
         alert('Check your email for the confirmation link!');
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        console.log("[Auth] Attempting sign in...");
+        const { error, data } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
+        console.log("[Auth] Login successful for:", data.user?.email);
         onAuthSuccess();
       }
     } catch (err: any) {
+      console.error("[Auth] Error:", err.message);
       setError(err.message || 'Authentication failed');
+      alert(`Login Error: ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -138,6 +142,18 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
             >
               {loading ? 'Processing...' : (isSignUp ? 'Create Account' : 'Sign In')}
             </button>
+
+            <div className="mt-8 pt-6 border-t border-slate-800 text-center">
+              <p className="text-[10px] text-slate-600 font-mono break-all uppercase tracking-widest">
+                Diagnostic: {API_URL}
+              </p>
+              <div className="mt-2 flex items-center justify-center gap-2">
+                <div className={`w-2 h-2 rounded-full ${API_URL.startsWith('https') ? 'bg-green-500' : 'bg-red-500'}`} />
+                <span className="text-[10px] text-slate-500 uppercase">
+                  {API_URL.startsWith('https') ? 'Secure API' : 'Insecure API (Will fail on mobile)'}
+                </span>
+              </div>
+            </div>
           </form>
 
           <div className="mt-6 text-center">
