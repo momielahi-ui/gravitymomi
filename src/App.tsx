@@ -157,6 +157,7 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
 // --- Logic to Attach Token to Requests ---
 
 const authenticatedFetch = async (url: string, options: RequestInit = {}) => {
+  console.log(`[Fetch] Calling: ${url}`);
   const { data: { session } } = await supabase.auth.getSession();
   const headers: Record<string, string> = {
     ...Object.fromEntries(new Headers(options.headers || {}).entries()),
@@ -167,7 +168,16 @@ const authenticatedFetch = async (url: string, options: RequestInit = {}) => {
     headers['Authorization'] = `Bearer ${session.access_token}`;
   }
 
-  return fetch(url, { ...options, headers });
+  try {
+    const res = await fetch(url, { ...options, headers });
+    if (!res.ok) {
+      console.error(`[Fetch] Request failed with status: ${res.status}`);
+    }
+    return res;
+  } catch (err) {
+    console.error(`[Fetch] Network error calling ${url}:`, err);
+    throw err;
+  }
 };
 
 // --- Updated Sub-Components (Same UI, New Data Handling) ---
@@ -823,11 +833,13 @@ export default function App() {
   }, []);
 
   const checkSetup = async (currentSession: any) => {
+    console.log("[App] Checking setup status...");
     try {
       const res = await authenticatedFetch(`${API_URL}/status`, {
         headers: { 'Authorization': `Bearer ${currentSession.access_token}` }
       });
       const data = await res.json();
+      console.log("[App] Setup data received:", data);
       if (data.setupCompleted) {
         setConfig(data.config);
         setView('dashboard');
@@ -835,7 +847,11 @@ export default function App() {
         setConfig(data.config || {}); // Ensure we have a config object
         setView('onboarding');
       }
-    } catch {
+    } catch (err) {
+      console.error("[App] checkSetup Error:", err);
+      // If we are on Render, and it's the first time, the "Free Tier" might be spinning up.
+      // We don't want to kick them back to auth if it's just a network delay or wake-up time.
+      alert("Note: If this is the first time using the app, the server might be waking up (Render Free Tier). Please wait a moment and try again.");
       setView('auth'); // Fallback
     }
   };
