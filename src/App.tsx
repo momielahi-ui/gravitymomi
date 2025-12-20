@@ -147,11 +147,18 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
               <p className="text-[10px] text-slate-600 font-mono break-all uppercase tracking-widest">
                 Diagnostic: {API_URL}
               </p>
-              <div className="mt-2 flex items-center justify-center gap-2">
-                <div className={`w-2 h-2 rounded-full ${API_URL.startsWith('https') ? 'bg-green-500' : 'bg-red-500'}`} />
-                <span className="text-[10px] text-slate-500 uppercase">
-                  {API_URL.startsWith('https') ? 'Secure API' : 'Insecure API (Will fail on mobile)'}
-                </span>
+              <div className="mt-2 flex flex-col items-center gap-1">
+                <div className="flex items-center gap-2">
+                  <div className={`w-2 h-2 rounded-full ${API_URL.startsWith('https') ? 'bg-green-500' : 'bg-red-500 animate-pulse'}`} />
+                  <span className="text-[10px] text-slate-500 uppercase">
+                    {API_URL.startsWith('https') ? 'Secure API' : (API_URL.includes('localhost') ? 'Check Vercel Env!' : 'Insecure API')}
+                  </span>
+                </div>
+                {!API_URL.startsWith('https') && (
+                  <p className="text-[8px] text-red-500 font-bold uppercase text-center mt-1 leading-tight">
+                    Mobile blocks "http"! <br /> Set VITE_API_URL to https in Vercel
+                  </p>
+                )}
               </div>
             </div>
           </form>
@@ -172,7 +179,7 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
 
 // --- Logic to Attach Token to Requests ---
 
-const authenticatedFetch = async (url: string, options: RequestInit = {}) => {
+const authenticatedFetch = async (url: string, options: RequestInit = {}, retries = 3) => {
   console.log(`[Fetch] Calling: ${url}`);
   const { data: { session } } = await supabase.auth.getSession();
   const headers: Record<string, string> = {
@@ -184,16 +191,26 @@ const authenticatedFetch = async (url: string, options: RequestInit = {}) => {
     headers['Authorization'] = `Bearer ${session.access_token}`;
   }
 
-  try {
-    const res = await fetch(url, { ...options, headers });
-    if (!res.ok) {
-      console.error(`[Fetch] Request failed with status: ${res.status}`);
+  for (let i = 0; i < retries; i++) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 20000); // 20s timeout per attempt
+
+      const res = await fetch(url, { ...options, headers, signal: controller.signal });
+      clearTimeout(timeoutId);
+
+      if (!res.ok) {
+        console.error(`[Fetch] Request failed with status: ${res.status}`);
+      }
+      return res;
+    } catch (err: any) {
+      console.warn(`[Fetch] Attempt ${i + 1} failed:`, err);
+      if (i === retries - 1) throw err;
+      // Wait 3 seconds before retrying (gives Render time to wake up)
+      await new Promise(r => setTimeout(r, 3000));
     }
-    return res;
-  } catch (err) {
-    console.error(`[Fetch] Network error calling ${url}:`, err);
-    throw err;
   }
+  throw new Error("Maximum retries reached");
 };
 
 // --- Updated Sub-Components (Same UI, New Data Handling) ---
@@ -865,9 +882,9 @@ export default function App() {
       }
     } catch (err: any) {
       console.error("[App] checkSetup Error:", err);
-      // Detailed alert for mobile debugging
-      alert(`Connection Error: ${err.message || 'Unknown Error'}\n\nURL: ${API_URL}/status\n\nPlease check if VITE_API_URL starts with https:// and ends with /api`);
-      setView('auth'); // Fallback
+      // Detailed error UI instead of just a kick-back
+      alert(`NUCLEAR FIX TRIGGERED:\n\n1. Error: ${err.message || 'Connection Failed'}\n2. API: ${API_URL}\n3. Check: Is the Render server spinning up?\n\nIf the URL above shows 'localhost', you MUST add environment variables to Vercel.`);
+      setView('auth');
     }
   };
 
