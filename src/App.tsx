@@ -847,11 +847,10 @@ export default function App() {
         setConfig(data.config || {}); // Ensure we have a config object
         setView('onboarding');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("[App] checkSetup Error:", err);
-      // If we are on Render, and it's the first time, the "Free Tier" might be spinning up.
-      // We don't want to kick them back to auth if it's just a network delay or wake-up time.
-      alert("Note: If this is the first time using the app, the server might be waking up (Render Free Tier). Please wait a moment and try again.");
+      // Detailed alert for mobile debugging
+      alert(`Connection Error: ${err.message || 'Unknown Error'}\n\nURL: ${API_URL}/status\n\nPlease check if VITE_API_URL starts with https:// and ends with /api`);
       setView('auth'); // Fallback
     }
   };
