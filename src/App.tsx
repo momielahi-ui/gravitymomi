@@ -62,6 +62,7 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
+    alert("🚀 NUCLEAR FIX ACTIVE: Attempting Sign In...");
     setLoading(true);
     setError('');
 
