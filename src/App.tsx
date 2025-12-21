@@ -597,8 +597,17 @@ const VoiceDemoView: React.FC<VoiceDemoViewProps> = ({ config }) => {
     () => stopListening() // On speech end (silence)
   );
 
+  // Debug state
+  const [debugInfo, setDebugInfo] = useState<string[]>([]);
+  const addDebug = (msg: string) => setDebugInfo(prev => [...prev.slice(-4), msg]); // Keep last 5
+
+  const activeUtteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+
   useEffect(() => {
-    const loadVoices = () => synthRef.current.getVoices();
+    const loadVoices = () => {
+      const voices = synthRef.current.getVoices();
+      addDebug(`Voices loaded: ${voices.length}`);
+    };
     loadVoices();
     synthRef.current.addEventListener('voiceschanged', loadVoices);
     return () => synthRef.current.removeEventListener('voiceschanged', loadVoices);
@@ -609,60 +618,52 @@ const VoiceDemoView: React.FC<VoiceDemoViewProps> = ({ config }) => {
 
     isProcessingRef.current = true;
     setStatus('Thinking');
-    setAiResponse(''); // Clear previous response
+    setAiResponse('');
+    addDebug(`Processing: "${text.substring(0, 15)}..."`);
 
     try {
-      // Start streaming request
       const response = await authenticatedFetch(`${API_URL}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text, history: [] }) // Send fresh history for demo
+        body: JSON.stringify({ message: text, history: [] })
       });
 
       if (!response.body) throw new Error("No response body");
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
-      let fullText = '';
       let buffer = '';
 
       setStatus('Speaking');
+      addDebug("Stream started");
 
       while (true) {
         const { done, value } = await reader.read();
-
         if (value) {
           const chunk = decoder.decode(value, { stream: true });
-          fullText += chunk;
           buffer += chunk;
           setAiResponse(prev => prev + chunk); // Optimistic UI update
 
-          // Check for sentence boundaries to speak chunks immediately
-          // Regex checks for [.!?] followed by space or end of string
+          // Check for sentence boundaries
           const sentences = buffer.split(/([.!?]+(?:\s|$))/);
-
           if (sentences.length > 1) {
-            // We have at least one complete sentence
             const sentenceToSpeak = sentences[0] + (sentences[1] || '');
             if (sentenceToSpeak.trim()) {
               speak(sentenceToSpeak.trim());
-              // Remove spoken part from buffer, keep the rest
               buffer = buffer.slice(sentenceToSpeak.length);
             }
           }
         }
-
         if (done) break;
       }
 
-      // Speak any remaining buffer
-      if (buffer.trim()) {
-        speak(buffer.trim());
-      }
+      // Speak remaining
+      if (buffer.trim()) speak(buffer.trim());
 
     } catch (err: any) {
       console.error("Voice chat error:", err);
       setStatus('Error: Connection Failed');
+      addDebug(`Error: ${err.message}`);
     } finally {
       isProcessingRef.current = false;
     }
@@ -670,12 +671,16 @@ const VoiceDemoView: React.FC<VoiceDemoViewProps> = ({ config }) => {
 
 
   const speak = (text: string) => {
-    if (synthRef.current.speaking) {
-      // If already speaking, we might queue properly or just let it stack
-      // window.speechSynthesis handles queuing automatically
-    }
+    addDebug(`Speaking: "${text.substring(0, 10)}..."`);
+
+    // Explicitly cancel ANY current speech to prevent queue buildup and ensure instant response
+    // But we only want to cancel if it's an OLD response, not if we are streaming chunks...
+    // Actually, streaming chunks should queue. 
+    // BUT if the user starts talking, we call cancel() in the click handler. That is correct.
 
     const utterance = new SpeechSynthesisUtterance(text);
+    activeUtteranceRef.current = utterance; // Keep reference to prevent GC
+
     const voices = synthRef.current.getVoices();
     const preferredVoice = voices.find(v => v.name.includes('Google') || (v.name.includes('Microsoft') && v.name.includes('Female'))) || voices.find(v => v.lang.startsWith('en')) || voices[0];
 
@@ -683,13 +688,19 @@ const VoiceDemoView: React.FC<VoiceDemoViewProps> = ({ config }) => {
     utterance.rate = 1.0;
     utterance.pitch = 1.0;
 
-    // When the LAST utterance finishes, go back to idle
     utterance.onend = () => {
-      // Only reset if we are done processing everything
+      // Only reset status if this was the last thing in the queue?
+      // It's hard to know if it's the last. 
+      // We can just rely on isProcessingRef checking.
       if (!isProcessingRef.current && !synthRef.current.speaking) {
         setStatus('Idle');
         setIsListening(false);
       }
+    };
+
+    utterance.onerror = (e) => {
+      console.error("TTS Error:", e);
+      addDebug(`TTS Error: ${e.error}`);
     };
 
     synthRef.current.speak(utterance);
@@ -858,6 +869,18 @@ const VoiceDemoView: React.FC<VoiceDemoViewProps> = ({ config }) => {
             <p className="text-sm md:text-base text-white">{aiResponse}</p>
           </div>
         )}
+      </div>
+
+      {/* Debug Console */}
+      <div className="fixed bottom-4 right-4 max-w-xs w-full pointer-events-none z-50">
+        <div className="bg-black/80 p-2 rounded-lg text-[10px] font-mono text-green-400 pointer-events-auto backdrop-blur border border-green-500/30">
+          <p className="font-bold text-slate-400 mb-1 border-b border-slate-700 pb-1">Debug Log</p>
+          {debugInfo.length === 0 ? <p className="text-slate-600">No logs...</p> :
+            debugInfo.map((msg, i) => (
+              <p key={i} className="truncate">{msg}</p>
+            ))
+          }
+        </div>
       </div>
     </div>
   );
