@@ -500,7 +500,7 @@ const useAudioVAD = (onSpeechStart: () => void, onSpeechEnd: () => void) => {
 
   // VAD Parameters
   const SILENCE_THRESHOLD = 700; // ms to wait before considering speech ended
-  const VOLUME_THRESHOLD = 0.02; // Minimum volume to consider as speech
+  const VOLUME_THRESHOLD = 0.05; // Increased from 0.02 to avoid background noise
   const MAX_DURATION = 6000; // Hard stop after 6s of speaking
 
   const startMonitoring = async (stream: MediaStream) => {
@@ -528,6 +528,9 @@ const useAudioVAD = (onSpeechStart: () => void, onSpeechEnd: () => void) => {
       let sum = 0;
       for (let i = 0; i < bufferLength; i++) sum += dataArray[i];
       const average = sum / bufferLength / 255; // Normalize 0-1
+
+      // Optional: Log volume occasionally for debugging (comment out in production)
+      if (Math.random() > 0.95) console.log("VAD Volume:", average.toFixed(4));
 
       const now = Date.now();
 
@@ -596,6 +599,9 @@ const VoiceDemoView: React.FC<VoiceDemoViewProps> = ({ config }) => {
     () => addDebug("VAD: Speech Start"),
     () => {
       addDebug("VAD: Speech End");
+      // FORCE stop everything. Do not rely on recognition.onend entirely
+      // to prevent VAD loops if recognition is flaky.
+      vad.stopMonitoring();
       stopListening();
     }
   );
