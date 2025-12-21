@@ -886,10 +886,12 @@ export default function App() {
         headers: { 'Authorization': `Bearer ${currentSession.access_token}` }
       });
 
-      // Handle 401 - redirect to login
+      // Handle 401 - backend doesn't recognize token, but user IS authenticated with Supabase
+      // Proceed to onboarding instead of redirecting to login (which causes an infinite loop)
       if (res.status === 401) {
-        console.log("[App] Unauthorized - redirecting to auth");
-        setView('auth');
+        console.log("[App] Backend returned 401 - proceeding to onboarding (user is authenticated with Supabase)");
+        setConfig({} as BusinessConfig);
+        setView('onboarding');
         return;
       }
 
@@ -909,9 +911,10 @@ export default function App() {
       }
     } catch (err: any) {
       console.error("[App] checkSetup Error:", err);
-      // Detailed error UI instead of just a kick-back
-      alert(`⚠️ Connection Error\n\n${err.message || 'Connection Failed'}\n\nAPI: ${API_URL}\n\nThe server may be starting up. Please wait 30 seconds and try again.`);
-      setView('auth');
+      // On error, proceed to onboarding rather than kicking back to login
+      console.log("[App] Connection error - proceeding to onboarding");
+      setConfig({} as BusinessConfig);
+      setView('onboarding');
     }
   };
 
