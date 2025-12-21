@@ -62,7 +62,7 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
-    alert("🚀 NUCLEAR FIX ACTIVE: Attempting Sign In...");
+    console.log("[Auth] Starting authentication...");
     setLoading(true);
     setError('');
 
@@ -106,6 +106,7 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
                 <input
                   type="email"
                   required
+                  autoComplete="off"
                   className="w-full bg-slate-900 border border-slate-700 text-white rounded-xl pl-10 pr-4 py-3 focus:ring-2 focus:ring-purple-600 outline-none transition"
                   placeholder="you@company.com"
                   value={email}
