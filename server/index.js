@@ -125,17 +125,17 @@ app.post('/api/chat', async (req, res) => {
   5. Keep responses concise (under 50 words) suitable for a chat interface.
   `;
 
-    // Validate History for Gemini (Must start with User)
-    let formattedHistory = history.map(msg => ({
-        role: msg.role === 'assistant' ? 'model' : 'user',
-        parts: [{ text: msg.content }],
-    }));
-
-    if (formattedHistory.length > 0 && formattedHistory[0].role === 'model') {
-        formattedHistory.unshift({ role: 'user', parts: [{ text: 'Start conversation' }] });
-    }
-
     try {
+        // Validate History for Gemini (Must start with User)
+        let formattedHistory = history.map(msg => ({
+            role: msg.role === 'assistant' ? 'model' : 'user',
+            parts: [{ text: msg.content }],
+        }));
+
+        if (formattedHistory.length > 0 && formattedHistory[0].role === 'model') {
+            formattedHistory.unshift({ role: 'user', parts: [{ text: 'Start conversation' }] });
+        }
+
         const chat = model.startChat({
             history: formattedHistory,
             systemInstruction: {
@@ -144,11 +144,11 @@ app.post('/api/chat', async (req, res) => {
             },
         });
 
+        const result = await chat.sendMessageStream(message);
+
         // Set headers for streaming
         res.setHeader('Content-Type', 'text/plain');
         res.setHeader('Transfer-Encoding', 'chunked');
-
-        const result = await chat.sendMessageStream(message);
 
         for await (const chunk of result.stream) {
             const chunkText = chunk.text();
@@ -158,16 +158,25 @@ app.post('/api/chat', async (req, res) => {
         res.end();
 
     } catch (error) {
-        console.error('Gemini Error Full:', JSON.stringify(error, null, 2));
-        if (error.message) console.error('Error Message:', error.message);
+        console.error('Gemini API Error:', error);
 
-        // If headers haven't been sent, we can send a JSON error
+        // Ensure we don't try to send headers if already sent (streaming started)
         if (!res.headersSent) {
-            res.status(500).json({ error: error.message || 'Connection failed' });
+            res.status(500).json({
+                error: error.message || 'Internal Server Error',
+                details: error.toString()
+            });
         } else {
-            // If streaming started, we can't send a proper error status, just end
             res.end();
         }
+    }
+});
+
+// Global Error Handler (Must be last)
+app.use((err, req, res, next) => {
+    console.error('Unhandled Error:', err);
+    if (!res.headersSent) {
+        res.status(500).json({ error: 'Internal Server Error', message: err.message });
     }
 });
 
