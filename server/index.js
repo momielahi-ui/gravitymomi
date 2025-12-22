@@ -18,12 +18,6 @@ app.get('/', (req, res) => {
     res.send('Smart Reception Backend is running!');
 });
 
-// Global error handler
-app.use((err, req, res, next) => {
-    console.error('Unhandled Global Error:', err);
-    res.status(500).json({ error: 'Internal Server Error', details: err.message });
-});
-
 // Supabase Setup
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_ANON_KEY; // Using Anon Key for client operations, usually passed via Authorization header
@@ -437,7 +431,72 @@ app.post('/webhooks/twilio/voice', express.urlencoded({ extended: false }), vali
 });
 
 // Twilio Gather Webhook - Process speech
-// ... (No changes needed here for limits, usage is tracked on status callback)
+app.post('/webhooks/twilio/gather', express.urlencoded({ extended: false }), validateTwilioRequest, async (req, res) => {
+    const { SpeechResult, business_id, call_sid } = { ...req.body, ...req.query };
+    console.log(`Gather result for call ${call_sid}: "${SpeechResult}"`);
+
+    try {
+        const supabase = createClient(supabaseUrl, supabaseKey);
+
+        // Get business config
+        const { data: business } = await supabase
+            .from('businesses')
+            .select('*')
+            .eq('id', business_id)
+            .single();
+
+        if (!business) {
+            const twiml = new VoiceResponse();
+            twiml.say('Sorry, configuration error.');
+            twiml.hangup();
+            return res.type('text/xml').send(twiml.toString());
+        }
+
+        // Get AI response
+        const systemPrompt = `You are an AI receptionist for "${business.business_name}".
+Services: ${business.services}
+Hours: ${business.working_hours}
+Tone: ${business.tone}
+Keep responses very brief (under 30 words) for voice calls.`;
+
+        const chat = model.startChat({
+            systemInstruction: { role: 'system', parts: [{ text: systemPrompt }] }
+        });
+
+        const result = await chat.sendMessage(SpeechResult || 'Hello');
+        const aiResponse = result.response.text();
+
+        // Log interaction
+        await supabase.from('call_logs').update({
+            transcript: { user: SpeechResult, ai: aiResponse }
+        }).eq('call_sid', call_sid);
+
+        // Respond with TwiML
+        const twiml = new VoiceResponse();
+        twiml.say({ voice: 'Polly.Joanna' }, aiResponse);
+
+        // Continue conversation
+        twiml.gather({
+            input: 'speech',
+            action: `/webhooks/twilio/gather?business_id=${business_id}&call_sid=${call_sid}`,
+            speechTimeout: 'auto',
+            language: 'en-US'
+        });
+
+        twiml.say({ voice: 'Polly.Joanna' }, 'Is there anything else I can help with?');
+        twiml.hangup();
+
+        res.type('text/xml').send(twiml.toString());
+
+    } catch (err) {
+        console.error('Gather webhook error:', err);
+        const twiml = new VoiceResponse();
+        twiml.say('Sorry, I encountered an error.');
+        twiml.hangup();
+        res.type('text/xml').send(twiml.toString());
+    }
+});
+
 
 // Twilio Status Callback
 app.post('/webhooks/twilio/status', express.urlencoded({ extended: false }), validateTwilioRequest, async (req, res) => {
