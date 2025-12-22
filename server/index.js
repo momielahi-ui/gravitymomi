@@ -13,6 +13,17 @@ const port = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
+// Root route for simple verification
+app.get('/', (req, res) => {
+    res.send('Smart Reception Backend is running!');
+});
+
+// Global error handler
+app.use((err, req, res, next) => {
+    console.error('Unhandled Global Error:', err);
+    res.status(500).json({ error: 'Internal Server Error', details: err.message });
+});
+
 // Supabase Setup
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_ANON_KEY; // Using Anon Key for client operations, usually passed via Authorization header
