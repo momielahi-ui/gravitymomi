@@ -73,7 +73,7 @@ app.get('/api/health', (req, res) => {
     res.json({
         status: 'ok',
         model: 'gemini-flash-latest',
-        deployment: '2025-12-22-v2-quota-fix'
+        deployment: '2025-12-24-resend-fix'
     });
 });
 
