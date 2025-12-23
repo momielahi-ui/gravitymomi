@@ -7,7 +7,7 @@ import {
 import { supabase } from './lib/supabase';
 
 // In production, set VITE_API_URL in your hosting provider (e.g. Vercel)
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+const API_URL = import.meta.env.VITE_API_URL || 'https://gravitymomi.onrender.com/api';
 
 // --- Shared Components ---
 
@@ -718,6 +718,10 @@ const BillingView: React.FC<{
         }
       } catch (e) {
         console.error("Failed to fetch plans", e);
+        // Alert user if this is a network error (likely due to missing API_URL)
+        if (e instanceof Error && e.message.includes('Network')) {
+          alert("Could not connect to server. Please check your internet or try again later.");
+        }
       } finally {
         setLoading(false);
       }
