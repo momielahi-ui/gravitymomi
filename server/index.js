@@ -369,9 +369,9 @@ app.get('/api/twilio/status', async (req, res) => {
 // GET /api/billing/plans
 app.get('/api/billing/plans', (req, res) => {
     res.json([
-        { id: 'free', name: 'Free Tier', price: 0, minutes: 10, features: ['Basic Voice', 'Demo Access'] },
-        { id: 'starter', name: 'Starter Plan', price: 29, minutes: 100, features: ['Standard Voice', 'Email Support', '100 Mins/mo'] },
-        { id: 'pro', name: 'Pro Plan', price: 99, minutes: 500, features: ['Premium Voice', 'Priority Support', '500 Mins/mo'] }
+        { id: 'starter', name: 'Starter Plan', price: 29, minutes: 100, features: ['Basic AI Voice', 'Email Support'] },
+        { id: 'growth', name: 'Growth Plan', price: 79, minutes: 500, features: ['Advanced Voice', 'Priority Support', 'Custom Greeting'] },
+        { id: 'pro', name: 'Pro Plan', price: 149, minutes: 2000, features: ['Premium Voice', '24/7 Phone Support', 'API Access', 'White Labeling'] }
     ]);
 });
 

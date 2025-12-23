@@ -747,18 +747,18 @@ const BillingView: React.FC<{
         } else {
           // Fallback
           setPlans([
-            { id: 'free', name: 'Free Tier', price: 0, minutes: 10, features: ['Basic Voice'] },
-            { id: 'starter', name: 'Starter Plan', price: 29, minutes: 100, features: ['Standard Voice', 'Email Support'] },
-            { id: 'pro', name: 'Pro Plan', price: 99, minutes: 500, features: ['Premium Voice', 'Priority Support'] }
+            { id: 'starter', name: 'Starter Plan', price: 29, minutes: 100, features: ['Basic AI Voice', 'Email Support'] },
+            { id: 'growth', name: 'Growth Plan', price: 79, minutes: 500, features: ['Advanced Voice', 'Priority Support', 'Custom Greeting'] },
+            { id: 'pro', name: 'Pro Plan', price: 149, minutes: 2000, features: ['Premium Voice', '24/7 Phone Support', 'API Access', 'White Labeling'] }
           ]);
         }
       } catch (e) {
         console.error("Failed to fetch plans", e);
         // Fallback on error so user sees something
         setPlans([
-          { id: 'free', name: 'Free Tier', price: 0, minutes: 10, features: ['Basic Voice'] },
-          { id: 'starter', name: 'Starter Plan', price: 29, minutes: 100, features: ['Standard Voice', 'Email Support'] },
-          { id: 'pro', name: 'Pro Plan', price: 99, minutes: 500, features: ['Premium Voice', 'Priority Support'] }
+          { id: 'starter', name: 'Starter Plan', price: 29, minutes: 100, features: ['Basic AI Voice', 'Email Support'] },
+          { id: 'growth', name: 'Growth Plan', price: 79, minutes: 500, features: ['Advanced Voice', 'Priority Support', 'Custom Greeting'] },
+          { id: 'pro', name: 'Pro Plan', price: 149, minutes: 2000, features: ['Premium Voice', '24/7 Phone Support', 'API Access', 'White Labeling'] }
         ]);
       } finally {
         setLoading(false);
