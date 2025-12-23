@@ -53,7 +53,7 @@ const transporter = nodemailer.createTransport({
     port: parseInt(process.env.SMTP_PORT || '465'),
     secure: process.env.SMTP_SECURE === 'true' || true, // true for 465, false for other ports
     auth: {
-        user: process.env.SENDER_EMAIL || process.env.PAYONEER_EMAIL,
+        user: process.env.SMTP_USER || process.env.SENDER_EMAIL || process.env.PAYONEER_EMAIL,
         pass: process.env.EMAIL_PASSWORD
     }
 });
