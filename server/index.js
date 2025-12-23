@@ -47,11 +47,13 @@ const getSupabaseClient = (token) => {
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || 'dummy-key');
 const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
 
-// Email Transporter (Use Payoneer Email or Gmail App Password)
+// Email Transporter (Explicit SSL for Render Stability)
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true, // use SSL
     auth: {
-        user: process.env.SENDER_EMAIL || process.env.PAYONEER_EMAIL, // Allow generic sender var
+        user: process.env.SENDER_EMAIL || process.env.PAYONEER_EMAIL,
         pass: process.env.EMAIL_PASSWORD
     }
 });
@@ -789,8 +791,40 @@ setInterval(() => { }, 10000);
 process.on('exit', (code) => {
     console.log(`Process exiting with code: ${code}`);
 });
-process.on('unhandledRejection', (reason, p) => {
-    console.log('Unhandled Rejection at:', p, 'reason:', reason);
+console.log('Unhandled Rejection at:', p, 'reason:', reason);
+});
+
+// POST /api/admin/test-email (Debug)
+app.post('/api/admin/test-email', requireAdmin, async (req, res) => {
+    console.log('[Debug] Testing SMTP Connection...');
+    const sender = process.env.SENDER_EMAIL || process.env.PAYONEER_EMAIL;
+    const password = process.env.EMAIL_PASSWORD;
+
+    if (!sender || !password) {
+        return res.status(500).json({ error: 'Missing SENDER_EMAIL or EMAIL_PASSWORD in Live Environment' });
+    }
+
+    try {
+        await transporter.verify();
+        console.log('[Debug] SMTP Verify Success');
+
+        await transporter.sendMail({
+            from: `"SmartReception Debug" <${sender}>`,
+            to: sender,
+            subject: 'Debug: SMTP Configuration Works',
+            text: 'Your email configuration on Render is correct!'
+        });
+
+        res.json({ success: true, message: `SMTP Verified! Email sent to ${sender}` });
+    } catch (err) {
+        console.error('[Debug] SMTP Failed:', err);
+        res.status(500).json({
+            error: 'SMTP Connection Failed',
+            details: err.message,
+            code: err.code,
+            tip: err.code === 'EAUTH' ? 'Check EMAIL_PASSWORD. Must be an App Password.' : 'Check SENDER_EMAIL.'
+        });
+    }
 });
 
 
