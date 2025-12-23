@@ -673,11 +673,11 @@ const PaymentModal: React.FC<{
 
         <div className="mb-6">
           <label className="block text-sm font-medium text-slate-300 mb-2">
-            {method === 'payoneer' ? 'Your Payoneer Email' : 'Transaction ID / Sender Name'}
+            {method === 'payoneer' ? 'Transaction ID / Payoneer Email' : 'Transaction ID / Sender Name'}
           </label>
           <input
             className="w-full bg-slate-950 border border-slate-700 text-white rounded-xl p-3 outline-none focus:border-purple-500"
-            placeholder={method === 'payoneer' ? "e.g. you@example.com" : "e.g. TXN-12345678"}
+            placeholder={method === 'payoneer' ? "e.g. 12345678 or you@example.com" : "e.g. TXN-12345678"}
             value={reference}
             onChange={e => setReference(e.target.value)}
           />
