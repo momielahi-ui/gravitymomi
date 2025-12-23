@@ -47,11 +47,11 @@ const getSupabaseClient = (token) => {
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || 'dummy-key');
 const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
 
-// Email Transporter (Explicit SSL for Render Stability)
+// Email Transporter (Generic SMTP to support Resend/Gmail/Outlook)
 const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 465,
-    secure: true, // use SSL
+    host: process.env.SMTP_HOST || 'smtp.gmail.com',
+    port: parseInt(process.env.SMTP_PORT || '465'),
+    secure: process.env.SMTP_SECURE === 'true' || true, // true for 465, false for other ports
     auth: {
         user: process.env.SENDER_EMAIL || process.env.PAYONEER_EMAIL,
         pass: process.env.EMAIL_PASSWORD
