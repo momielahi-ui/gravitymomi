@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import {
   Phone, MessageSquare, Mic, Settings, Send, MicOff,
   CheckCircle2, LayoutDashboard, LogOut, Globe, Sparkles, Lock, Mail, Menu, X, Clock,
-  PhoneOutgoing
+  PhoneOutgoing, CreditCard
 } from 'lucide-react';
 import { supabase } from './lib/supabase';
 
@@ -523,6 +523,241 @@ const ChatDemoView: React.FC<ChatDemoViewProps> = ({ config, isDemoMode }) => {
           <button onClick={handleSend} className="p-3 bg-purple-600 text-white rounded-lg hover:bg-purple-500 transition"><Send className="w-4 h-4" /></button>
         </div>
       </Card>
+    </div>
+  );
+};
+
+// --- Billing Components ---
+
+const BillingPricingCard: React.FC<{
+  plan: string;
+  price: string;
+  mins: number;
+  current: boolean;
+  features: string[];
+  onClick: () => void;
+}> = ({ plan, price, mins, current, features, onClick }) => (
+  <Card className={`p-6 relative overflow-hidden flex flex-col ${current ? 'border-purple-500 ring-1 ring-purple-500' : 'opacity-80 hover:opacity-100 transition'}`}>
+    {current && (
+      <div className="absolute top-0 right-0 bg-purple-600 text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl">
+        CURRENT PLAN
+      </div>
+    )}
+
+    <h3 className="text-xl font-bold text-white mb-1 capitalize">{plan}</h3>
+    <div className="flex items-baseline gap-1 mb-4">
+      <span className="text-2xl font-bold text-white">{price}</span>
+      {price !== 'Free' && <span className="text-sm text-slate-400">/mo</span>}
+    </div>
+
+    <div className="space-y-3 mb-8 flex-1">
+      <div className="flex items-center gap-2 text-sm text-slate-300">
+        <Clock className="w-4 h-4 text-purple-400" />
+        <span>{mins} mins/month</span>
+      </div>
+      {features.map((f, i) => (
+        <div key={i} className="flex items-center gap-2 text-sm text-slate-300">
+          <CheckCircle2 className="w-4 h-4 text-green-400" />
+          <span>{f}</span>
+        </div>
+      ))}
+    </div>
+
+    <button
+      disabled={current}
+      className={`w-full py-3 rounded-xl text-sm font-bold transition ${current
+        ? 'bg-slate-700 text-slate-400 cursor-default'
+        : 'bg-white text-slate-900 hover:bg-slate-200'
+        }`}
+      onClick={onClick}
+    >
+      {current ? 'Active Plan' : 'Select Plan'}
+    </button>
+  </Card>
+);
+
+const PaymentModal: React.FC<{
+  plan: any;
+  onClose: () => void;
+  onSuccess: () => void;
+}> = ({ plan, onClose, onSuccess }) => {
+  const [method, setMethod] = useState<'payoneer' | 'nayapay'>('payoneer');
+  const [reference, setReference] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [config, setConfig] = useState<{ payoneerEmail: string, nayapayId: string } | null>(null);
+
+  useEffect(() => {
+    // Fetch payment details
+    authenticatedFetch(`${API_URL}/admin/config`)
+      .then(res => res.json())
+      .then(data => setConfig(data))
+      .catch(() => setConfig({ payoneerEmail: 'payments@smartreception.ai', nayapayId: '03001234567' }));
+  }, []);
+
+  const handleSubmit = async () => {
+    if (!reference) return alert('Please enter the transaction reference');
+    setSubmitting(true);
+    try {
+      const res = await authenticatedFetch(`${API_URL}/billing/pay`, {
+        method: 'POST',
+        body: JSON.stringify({
+          plan: plan.id,
+          amount: plan.price,
+          paymentMethod: method,
+          reference
+        })
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        alert('Payment request submitted! We will activate your plan shortly after verification.');
+        onSuccess();
+      } else {
+        throw new Error(data.error);
+      }
+    } catch (e: any) {
+      alert(`Error: ${e.message}`);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (!config) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
+      <Card className="w-full max-w-lg p-6 bg-slate-900 border-slate-700">
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-xl font-bold text-white">Upgrade to {plan.name}</h3>
+          <button onClick={onClose}><X className="w-5 h-5 text-slate-400" /></button>
+        </div>
+
+        <div className="flex gap-2 mb-6">
+          <button
+            onClick={() => setMethod('payoneer')}
+            className={`flex-1 p-3 rounded-xl border transition ${method === 'payoneer' ? 'bg-purple-600/20 border-purple-500 text-white' : 'bg-slate-800 border-slate-700 text-slate-400'}`}
+          >
+            Payoneer
+          </button>
+          <button
+            onClick={() => setMethod('nayapay')}
+            className={`flex-1 p-3 rounded-xl border transition ${method === 'nayapay' ? 'bg-purple-600/20 border-purple-500 text-white' : 'bg-slate-800 border-slate-700 text-slate-400'}`}
+          >
+            NayaPay (Card)
+          </button>
+        </div>
+
+        <div className="mb-6 bg-slate-800 p-4 rounded-xl border border-slate-700/50">
+          <div className="text-sm text-slate-300 mb-2">Instructions:</div>
+          {method === 'payoneer' ? (
+            <div className="space-y-2">
+              <p className="font-semibold text-white text-md">USD Receiving Account Details</p>
+              <div className="grid grid-cols-2 gap-2 text-xs text-slate-400 bg-slate-900/50 p-2 rounded-lg border border-slate-700">
+                <span className="font-bold">Bank Name:</span> <span className="text-white">Citibank</span>
+                <span className="font-bold">Routing (ABA):</span> <span className="text-white select-all">031100209</span>
+                <span className="font-bold">Account Number:</span> <span className="text-white select-all">70586520001968114</span>
+                <span className="font-bold">Beneficiary:</span> <span className="text-white">Muhammad Elahi</span>
+              </div>
+              <p className="text-xs text-slate-500 mt-2">
+                Log in to your Payoneer, go to <b>Pay</b> &gt; <b>Make a Payment</b>, and use the details above.
+              </p>
+            </div>
+          ) : (
+            <div>
+              <p className="font-semibold text-white text-lg select-all">{config.nayapayId}</p>
+              <p className="text-xs text-slate-500 mt-1">Send <b>Rs. {plan.price * 280}</b> (approx) via NayaPay App or Bank Transfer.</p>
+            </div>
+          )}
+        </div>
+
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-slate-300 mb-2">
+            {method === 'payoneer' ? 'Your Payoneer Email' : 'Transaction ID / Sender Name'}
+          </label>
+          <input
+            className="w-full bg-slate-950 border border-slate-700 text-white rounded-xl p-3 outline-none focus:border-purple-500"
+            placeholder={method === 'payoneer' ? "e.g. you@example.com" : "e.g. TXN-12345678"}
+            value={reference}
+            onChange={e => setReference(e.target.value)}
+          />
+        </div>
+
+        <button
+          onClick={handleSubmit}
+          disabled={submitting}
+          className="w-full py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-bold transition disabled:opacity-50"
+        >
+          {submitting ? 'Submitting...' : "I've Sent the Payment"}
+        </button>
+      </Card>
+    </div>
+  );
+};
+
+const BillingView: React.FC<{
+  business: any;
+}> = ({ business }) => {
+  const [plans, setPlans] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedPlan, setSelectedPlan] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchPlans = async () => {
+      try {
+        const res = await authenticatedFetch(`${API_URL}/billing/plans`);
+        if (res.ok) {
+          const data = await res.json();
+          setPlans(data);
+        } else {
+          // Fallback
+          setPlans([
+            { id: 'free', name: 'Free Tier', price: 0, minutes: 10, features: ['Basic Voice'] },
+            { id: 'starter', name: 'Starter Plan', price: 29, minutes: 100, features: ['Standard Voice', 'Email Support'] },
+            { id: 'pro', name: 'Pro Plan', price: 99, minutes: 500, features: ['Premium Voice', 'Priority Support'] }
+          ]);
+        }
+      } catch (e) {
+        console.error("Failed to fetch plans", e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPlans();
+  }, []);
+
+  if (loading) return <div className="text-white p-8">Loading plans...</div>;
+
+  return (
+    <div className="p-6 md:p-8 max-w-6xl mx-auto h-full overflow-y-auto">
+      <h2 className="text-3xl font-bold text-white mb-2">Billing & Plans</h2>
+      <p className="text-slate-400 mb-8">Choose a plan that fits your business needs.</p>
+
+      <div className="grid md:grid-cols-3 gap-6 mb-12">
+        {plans.map((plan) => (
+          <BillingPricingCard
+            key={plan.id}
+            plan={plan.name}
+            price={plan.price === 0 ? 'Free' : `$${plan.price}`}
+            mins={plan.minutes}
+            features={plan.features}
+            current={business.subscription_plan === plan.id || (plan.id === 'free' && !(!business.subscription_plan))}
+            onClick={() => setSelectedPlan(plan)}
+          />
+        ))}
+      </div>
+
+      {selectedPlan && (
+        <PaymentModal
+          plan={selectedPlan}
+          onClose={() => setSelectedPlan(null)}
+          onSuccess={() => setSelectedPlan(null)}
+        />
+      )}
+
+      <div className="bg-slate-800/50 p-6 rounded-2xl border border-slate-700">
+        <h3 className="text-xl font-bold text-white mb-4">Payment History</h3>
+        <p className="text-slate-400 text-sm">No recent transactions.</p>
+      </div>
     </div>
   );
 };
@@ -1082,10 +1317,11 @@ interface SettingsViewProps {
   config: BusinessConfig;
   onUpdate: () => void;
   isDemoMode?: boolean;
+  onNavigate: (view: string) => void;
 }
 
 // Settings View
-const SettingsView: React.FC<SettingsViewProps> = ({ config, onUpdate, isDemoMode }) => {
+const SettingsView: React.FC<SettingsViewProps> = ({ config, onUpdate, isDemoMode, onNavigate }) => {
   const [twilioPhone, setTwilioPhone] = useState('');
   const [accountSid, setAccountSid] = useState('');
   const [authToken, setAuthToken] = useState('');
@@ -1290,6 +1526,121 @@ const SettingsView: React.FC<SettingsViewProps> = ({ config, onUpdate, isDemoMod
           </div>
         </div>
       </Card>
+
+      <div className="mt-8 text-center">
+        <button
+          onClick={() => onNavigate('admin')}
+          className="text-slate-800 text-xs hover:text-slate-600 transition"
+        >
+          Admin Access
+        </button>
+      </div>
+    </div >
+  );
+};
+
+// --- Admin Component ---
+const AdminView = ({ onNavigate }: { onNavigate: (view: string) => void }) => {
+  const [payments, setPayments] = useState<any[]>([]);
+  const [secret, setSecret] = useState('');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const fetchPayments = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/admin/payments`, {
+        headers: { 'x-admin-secret': secret }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setPayments(data);
+        setIsAuthenticated(true);
+      } else {
+        alert('Invalid Secret');
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Connection Error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const approvePayment = async (id: string) => {
+    if (!confirm('Approve this payment?')) return;
+    try {
+      const res = await fetch(`${API_URL}/admin/approve`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-secret': secret
+        },
+        body: JSON.stringify({ requestId: id })
+      });
+      if (res.ok) {
+        alert('Approved!');
+        fetchPayments();
+      } else {
+        alert('Error approval');
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Error');
+    }
+  };
+
+  if (!isAuthenticated) {
+    return (
+      <div className="max-w-md mx-auto mt-20 px-4">
+        <Card className="p-6 bg-slate-900 border-slate-800">
+          <h2 className="text-xl font-bold text-white mb-4">Admin Access</h2>
+          <input
+            type="password"
+            placeholder="Admin Secret"
+            className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-white mb-4"
+            value={secret}
+            onChange={e => setSecret(e.target.value)}
+          />
+          <button onClick={fetchPayments} disabled={loading} className="w-full bg-purple-600 hover:bg-purple-700 text-white p-2 rounded transition">
+            {loading ? 'Verifying...' : 'Login'}
+          </button>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-4xl mx-auto mt-8 px-4">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold text-white">Payment Requests</h2>
+        <button onClick={() => { setIsAuthenticated(false); onNavigate('dashboard'); }} className="text-slate-400 hover:text-white">Exit</button>
+      </div>
+      <div className="space-y-4">
+        {payments.map((p: any) => (
+          <Card key={p.id} className="p-4 bg-slate-900 border-slate-800 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+              <p className="text-white font-bold flex items-center gap-2">
+                {p.plan.toUpperCase()} <span className="text-slate-500">|</span> ${p.amount}
+              </p>
+              <p className="text-sm text-slate-400">Ref: {p.payment_reference}</p>
+              <p className="text-xs text-slate-500 mt-1">{new Date(p.created_at).toLocaleString()} via {p.payment_method}</p>
+            </div>
+            <div className="flex gap-2">
+              {p.status === 'pending' ? (
+                <button onClick={() => approvePayment(p.id)} className="bg-green-600 text-white px-4 py-2 rounded text-sm hover:bg-green-700 font-bold">
+                  Approve
+                </button>
+              ) : (
+                <span className={`text-sm px-3 py-1 rounded capitalize ${p.status === 'approved' ? 'bg-green-900/50 text-green-300 border border-green-800' : 'bg-red-900/50 text-red-300 border border-red-800'}`}>
+                  {p.status}
+                </span>
+              )}
+            </div>
+          </Card>
+        ))}
+        {payments.length === 0 && <p className="text-slate-500 text-center py-10">No pending requests found.</p>}
+      </div>
     </div>
   );
 };
@@ -1341,6 +1692,13 @@ const AppShell: React.FC<AppShellProps> = ({ children, onLogout, user, onViewCha
           >
             <Settings className="w-4 h-4" />
             Settings
+          </button>
+          <button
+            onClick={() => { onViewChange('billing'); setIsMenuOpen(false); }}
+            className="flex items-center gap-3 w-full text-left px-3 py-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-900 transition"
+          >
+            <CreditCard className="w-4 h-4" />
+            Billing
           </button>
         </nav>
 
@@ -1477,7 +1835,9 @@ export default function App() {
   return (
     <AppShell onLogout={handleLogout} user={isDemoMode ? { email: 'Demo User' } : session?.user} onViewChange={setView}>
       {view === 'dashboard' && <DashboardView config={config || {} as BusinessConfig} onNavigate={setView} isDemoMode={isDemoMode} />}
-      {view === 'settings' && <SettingsView config={config || {} as BusinessConfig} onUpdate={() => session && checkSetup(session)} isDemoMode={isDemoMode} />}
+      {view === 'settings' && <SettingsView config={config || {} as BusinessConfig} onUpdate={() => session && checkSetup(session)} isDemoMode={isDemoMode} onNavigate={setView} />}
+      {view === 'billing' && <BillingView business={config || {} as BusinessConfig} />}
+      {view === 'admin' && <AdminView onNavigate={setView} />}
       {view === 'chat-demo' && <ChatDemoView config={config || {} as BusinessConfig} isDemoMode={isDemoMode} />}
       {view === 'phone-demo' && <VoiceDemoView config={config || {} as BusinessConfig} isDemoMode={isDemoMode} />}
     </AppShell>

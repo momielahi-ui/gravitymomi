@@ -7,7 +7,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 3001;
+const port = process.env.PORT || 3002;
 
 // Middleware
 app.use(cors());
@@ -352,6 +352,150 @@ app.get('/api/twilio/status', async (req, res) => {
     });
 });
 
+
+// ===== BILLING & PAYMENTS =====
+
+// GET /api/billing/plans
+app.get('/api/billing/plans', (req, res) => {
+    res.json([
+        { id: 'free', name: 'Free Tier', price: 0, minutes: 10, features: ['Basic Voice', 'Demo Access'] },
+        { id: 'starter', name: 'Starter Plan', price: 29, minutes: 100, features: ['Standard Voice', 'Email Support', '100 Mins/mo'] },
+        { id: 'pro', name: 'Pro Plan', price: 99, minutes: 500, features: ['Premium Voice', 'Priority Support', '500 Mins/mo'] }
+    ]);
+});
+
+// POST /api/billing/pay
+app.post('/api/billing/pay', async (req, res) => {
+    const user = await getUser(req); // Retrieve user from auth header
+    if (!user) return res.status(401).json({ error: 'Unauthorized' });
+
+    const { plan, amount, paymentMethod, reference, businessId } = req.body;
+
+    if (!plan || !amount || !paymentMethod || !reference) {
+        return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+        const supabase = token ? getSupabaseClient(token) : createClient(supabaseUrl, supabaseKey);
+
+        // 1. Verify business belongs to user
+        console.log(`[Billing] User: ${user.id}`);
+        const { data: business, error: bizError } = await supabase
+            .from('businesses')
+            .select('id')
+            .eq('user_id', user.id)
+            .single();
+
+        if (bizError) console.error('[Billing] Biz Lookup Error:', bizError);
+        console.log(`[Billing] Business Found:`, business);
+
+        // If no business found for user, we can't link payment
+        if (!business) return res.status(404).json({ error: 'Business not found' });
+
+        // 2. Create Payment Request
+        const { error } = await supabase
+            .from('payment_requests')
+            .insert({
+                user_id: user.id,
+                business_id: business.id,
+                plan,
+                amount,
+                payment_method: paymentMethod,
+                payment_reference: reference,
+                status: 'pending'
+            });
+
+        if (error) throw error;
+
+        res.json({ success: true, message: 'Payment request submitted' });
+    } catch (err) {
+        console.error('Payment Error:', err);
+        res.status(500).json({ error: 'Payment submission failed' });
+    }
+});
+
+// ADMIN ENDPOINTS (Protected by simple Secret for MVP)
+const ADMIN_SECRET = process.env.ADMIN_SECRET || 'admin123';
+
+const requireAdmin = (req, res, next) => {
+    const authHeader = req.headers['x-admin-secret'];
+    if (authHeader !== ADMIN_SECRET) {
+        return res.status(403).json({ error: 'Forbidden' });
+    }
+    next();
+};
+
+// GET /api/admin/payments
+app.get('/api/admin/payments', requireAdmin, async (req, res) => {
+    try {
+        const supabase = createClient(supabaseUrl, supabaseKey);
+        const { data, error } = await supabase
+            .from('payment_requests')
+            .select('*, businesses(business_name)')
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        res.json(data);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// POST /api/admin/approve
+app.post('/api/admin/approve', requireAdmin, async (req, res) => {
+    const { requestId } = req.body;
+    try {
+        const supabase = createClient(supabaseUrl, supabaseKey);
+
+        // 1. Get Request
+        const { data: request } = await supabase
+            .from('payment_requests')
+            .select('*')
+            .eq('id', requestId)
+            .single();
+
+        if (!request) return res.status(404).json({ error: 'Request not found' });
+        if (request.status === 'approved') return res.status(400).json({ error: 'Already approved' });
+
+        // 2. Determine limits
+        let minutesLimit = 10;
+        if (request.plan === 'starter') minutesLimit = 100;
+        if (request.plan === 'pro') minutesLimit = 500;
+
+        // 3. Update Business
+        const { error: busError } = await supabase
+            .from('businesses')
+            .update({
+                subscription_plan: request.plan,
+                minutes_limit: minutesLimit
+            })
+            .eq('id', request.business_id);
+
+        if (busError) throw busError;
+
+        // 4. Mark Request Approved
+        await supabase
+            .from('payment_requests')
+            .update({ status: 'approved' })
+            .eq('id', requestId);
+
+        res.json({ success: true, message: 'Plan activated' });
+    } catch (err) {
+        console.error('Approval Error:', err);
+        res.status(500).json({ error: 'Approval failed' });
+    }
+});
+
+// GET /api/admin/config (Payment Details)
+app.get('/api/admin/config', (req, res) => {
+    res.json({
+        payoneerEmail: process.env.PAYONEER_EMAIL || 'payments@smartreception.ai',
+        nayapayId: process.env.NAYAPAY_ID || '03001234567'
+    });
+});
+
+
 // Twilio Voice Webhook - Initial call
 app.post('/webhooks/twilio/voice', express.urlencoded({ extended: false }), validateTwilioRequest, async (req, res) => {
     const { To, From, CallSid } = req.body;
@@ -567,4 +711,15 @@ app.listen(port, '0.0.0.0', () => {
         console.log('⚠️  Twilio not configured (add credentials to .env)');
     }
 });
+
+// Debug: Prevent immediate exit if app.listen fails to hold event loop
+setInterval(() => { }, 10000);
+
+process.on('exit', (code) => {
+    console.log(`Process exiting with code: ${code}`);
+});
+process.on('unhandledRejection', (reason, p) => {
+    console.log('Unhandled Rejection at:', p, 'reason:', reason);
+});
+
 
