@@ -747,8 +747,8 @@ const BillingView: React.FC<{
         } else {
           // Fallback
           setPlans([
-            { id: 'starter', name: 'Starter Plan', price: 29, minutes: 100, features: ['Basic AI Voice', 'Email Support'] },
-            { id: 'growth', name: 'Growth Plan', price: 79, minutes: 500, features: ['Advanced Voice', 'Priority Support', 'Custom Greeting'] },
+            { id: 'starter', name: 'Starter Plan', price: 29, minutes: 100, features: ['Natural, human-like AI voice', 'Email Support'] },
+            { id: 'growth', name: 'Growth Plan', price: 79, minutes: 500, features: ['Natural, human-like AI voice', 'Priority Support', 'Custom Greeting'] },
             { id: 'pro', name: 'Pro Plan', price: 149, minutes: 2000, features: ['Premium Voice', '24/7 Phone Support', 'API Access', 'White Labeling'] }
           ]);
         }
@@ -899,6 +899,9 @@ const VoiceDemoView: React.FC<VoiceDemoViewProps> = ({ config, isDemoMode }) => 
   const [transcript, setTranscript] = useState('');
   const [aiResponse, setAiResponse] = useState('');
   const [status, setStatus] = useState<VoiceStatus>('Idle');
+  const [demoReplyCount, setDemoReplyCount] = useState(0);
+  const DEMO_REPLY_LIMIT = 5;
+
 
   const recognitionRef = useRef<any>(null);
   const synthRef = useRef<SpeechSynthesis>(window.speechSynthesis);
@@ -957,6 +960,12 @@ const VoiceDemoView: React.FC<VoiceDemoViewProps> = ({ config, isDemoMode }) => 
 
       console.log("[VoiceDemo] Sending payload:", bodyPayload);
 
+      if (isDemoMode && demoReplyCount >= DEMO_REPLY_LIMIT) {
+        setStatus('Idle');
+        setAiResponse("Demo limit reached. Please sign up for more!");
+        return;
+      }
+
       // Use direct fetch for demo mode to avoid any auth token interference
       const fetcher = isDemoMode ? fetch : authenticatedFetch;
 
@@ -1008,45 +1017,61 @@ const VoiceDemoView: React.FC<VoiceDemoViewProps> = ({ config, isDemoMode }) => 
       setStatus('Error: Connection Failed');
       addDebug(`Error: ${err.message}`);
     } finally {
+      if (isDemoMode) setDemoReplyCount(prev => prev + 1);
       isProcessingRef.current = false;
     }
   };
 
 
-  const speak = (text: string) => {
+  const audioCacheRef = useRef<HTMLAudioElement | null>(null);
+
+  const speak = async (text: string) => {
     addDebug(`Speaking: "${text.substring(0, 10)}..."`);
 
-    // Explicitly cancel ANY current speech to prevent queue buildup and ensure instant response
-    // But we only want to cancel if it's an OLD response, not if we are streaming chunks...
-    // Actually, streaming chunks should queue. 
-    // BUT if the user starts talking, we call cancel() in the click handler. That is correct.
+    try {
+      // Try Premium Voice (ElevenLabs Proxy)
+      const response = await fetch(`${API_URL}/voice/tts`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text,
+          isDemo: isDemoMode,
+          businessId: (config as any).id || (config as any).user_id
+        })
+      });
 
-    const utterance = new SpeechSynthesisUtterance(text);
-    activeUtteranceRef.current = utterance; // Keep reference to prevent GC
+      if (response.ok) {
+        const audioBlob = await response.blob();
+        const audioUrl = URL.createObjectURL(audioBlob);
 
-    const voices = synthRef.current.getVoices();
-    const preferredVoice = voices.find(v => v.name.includes('Google') || (v.name.includes('Microsoft') && v.name.includes('Female'))) || voices.find(v => v.lang.startsWith('en')) || voices[0];
+        if (audioCacheRef.current) {
+          audioCacheRef.current.pause();
+          audioCacheRef.current = null;
+        }
 
-    if (preferredVoice) utterance.voice = preferredVoice;
-    utterance.rate = 1.0;
-    utterance.pitch = 1.0;
-
-    utterance.onend = () => {
-      // Only reset status if this was the last thing in the queue?
-      // It's hard to know if it's the last. 
-      // We can just rely on isProcessingRef checking.
-      if (!isProcessingRef.current && !synthRef.current.speaking) {
-        setStatus('Idle');
-        setIsListening(false);
+        const audio = new Audio(audioUrl);
+        audioCacheRef.current = audio;
+        audio.onended = () => {
+          if (!isProcessingRef.current) setStatus('Idle');
+          URL.revokeObjectURL(audioUrl);
+        };
+        await audio.play();
+        return;
       }
-    };
 
-    utterance.onerror = (e) => {
-      console.error("TTS Error:", e);
-      addDebug(`TTS Error: ${e.error}`);
-    };
+      throw new Error("Premium TTS failed, falling back");
 
-    synthRef.current.speak(utterance);
+    } catch (e) {
+      console.warn("[TTS] Falling back to browser synthesis:", e);
+      // Fallback: Browser Speech Synthesis
+      const utterance = new SpeechSynthesisUtterance(text);
+      activeUtteranceRef.current = utterance;
+      const voices = synthRef.current.getVoices();
+      const preferredVoice = voices.find(v => v.name.includes('Google') || (v.name.includes('Microsoft') && v.name.includes('Female'))) || voices.find(v => v.lang.startsWith('en')) || voices[0];
+      if (preferredVoice) utterance.voice = preferredVoice;
+      utterance.onend = () => { if (!isProcessingRef.current) setStatus('Idle'); };
+      synthRef.current.speak(utterance);
+    }
   };
 
 
@@ -1153,10 +1178,16 @@ const VoiceDemoView: React.FC<VoiceDemoViewProps> = ({ config, isDemoMode }) => 
     <div className="flex flex-col min-h-[calc(100vh-12rem)] md:h-full items-center justify-center p-4">
       <div className="mb-6 md:mb-8 text-center max-w-full">
         <Badge color={status === 'Idle' ? 'blue' : status === 'Listening' ? 'red' : status === 'Speaking' ? 'green' : 'purple'}>
-          {status}
+          {status === 'Speaking' ? 'Natural, human-like voice' : status}
         </Badge>
         <h2 className="text-2xl md:text-3xl font-bold text-white mt-4 truncate px-4">{config.business_name}</h2>
-        <p className="text-slate-400 text-sm">Ultra-Low Latency Voice Demo</p>
+        <p className="text-slate-400 text-sm">Ultra-Low Latency Premium AI Voice</p>
+        {isDemoMode && (
+          <p className="text-[10px] text-slate-500 mt-2">
+            Demo usage: {demoReplyCount}/{DEMO_REPLY_LIMIT} replies
+          </p>
+        )}
+
       </div>
 
       <div className="relative mb-8 md:mb-12">

@@ -76,6 +76,15 @@ if (isResendKey) {
     });
 }
 
+// ElevenLabs Setup
+const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
+const ELEVENLABS_VOICE_ID = process.env.ELEVENLABS_VOICE_ID || 'agent_6901kd70rt78ecvt04kzgg4kbbzr';
+
+
+// Helper to estimate minutes from characters (approx 1000 chars = 1 min)
+const charsToMinutes = (chars) => Math.ceil(chars / 1000);
+
+
 // Helper to determine sender address
 const getSender = () => {
     if (process.env.SENDER_EMAIL) return process.env.SENDER_EMAIL;
@@ -247,17 +256,86 @@ app.post('/api/chat', async (req, res) => {
 
     } catch (error) {
         console.error('Gemini/Server API Error:', error);
+        res.status(500).json({ error: 'Failed to process chat' });
+    }
+});
 
-        // Ensure we don't try to send headers if already sent (streaming started)
-        if (!res.headersSent) {
-            res.status(500).json({
-                error: error.message || 'Internal Server Error',
-                details: error.toString()
-            });
-        } else {
-            console.error('Error occurred after headers sent, ending stream.');
-            res.end();
+// --- ElevenLabs TTS Proxy ---
+app.all('/api/voice/tts', async (req, res) => {
+    const text = req.method === 'GET' ? req.query.text : req.body.text;
+    const isDemo = req.method === 'GET' ? req.query.isDemo === 'true' : req.body.isDemo;
+    const businessId = req.method === 'GET' ? req.query.businessId : req.body.businessId;
+
+    if (!text) return res.status(400).json({ error: 'No text provided' });
+    if (!ELEVENLABS_API_KEY) {
+        console.warn('[TTS] ELEVENLABS_API_KEY missing, using fallback');
+        return res.status(503).json({ error: 'TTS service not configured' });
+    }
+
+    try {
+        let business = null;
+        if (!isDemo && businessId) {
+            // Check usage for paid plans
+            const supabase = createClient(supabaseUrl, process.env.SUPABASE_SERVICE_ROLE_KEY || supabaseKey);
+            const { data } = await supabase.from('businesses').select('*').eq('id', businessId).single();
+            business = data;
+
+            if (business) {
+                const used = business.minutes_used || 0;
+                const limit = business.minutes_limit || 10;
+                if (used >= limit) {
+                    return res.status(403).json({ error: 'Usage limit reached' });
+                }
+            }
         }
+
+        // Call ElevenLabs
+        console.log(`[TTS] Generating speech for: "${text.substring(0, 30)}..."`);
+        const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE_ID}/stream`, {
+            method: 'POST',
+            headers: {
+                'xi-api-key': ELEVENLABS_API_KEY,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                text,
+                model_id: 'eleven_monolingual_v1',
+                voice_settings: { stability: 0.5, similarity_boost: 0.5 }
+            })
+        });
+
+        if (!response.ok) {
+            const errBody = await response.text();
+            console.error('[TTS] ElevenLabs Error:', errBody);
+            throw new Error(`ElevenLabs API returned ${response.status}`);
+        }
+
+        // Update usage in background
+        if (!isDemo && business) {
+            const estimatedMins = charsToMinutes(text.length);
+            const supabase = createClient(supabaseUrl, process.env.SUPABASE_SERVICE_ROLE_KEY || supabaseKey);
+            supabase.from('businesses')
+                .update({ minutes_used: (business.minutes_used || 0) + estimatedMins })
+                .eq('id', business.id)
+                .then(({ error }) => {
+                    if (error) console.error('[TTS] Usage Update Error:', error);
+                });
+        }
+
+        // Stream the audio back to the client
+        res.setHeader('Content-Type', 'audio/mpeg');
+        // Node 18 fetch response.body is a ReadableStream (Web API), pipeable in standard way
+        const reader = response.body.getReader();
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            res.write(value);
+        }
+        res.end();
+
+    } catch (err) {
+        console.error('[TTS] Proxy Error:', err);
+        res.status(500).json({ error: 'TTS Generation failed' });
     }
 });
 
@@ -607,7 +685,16 @@ app.post('/webhooks/twilio/voice', express.urlencoded({ extended: false }), vali
 
         // Greet the caller
         const greeting = business.greeting || `Hello, you've reached ${business.business_name}. How can I help you?`;
-        twiml.say({ voice: 'Polly.Joanna' }, greeting);
+
+        // Use premium voice if enabled and limit not reached
+        const canUsePremium = ELEVENLABS_API_KEY && (business.minutes_used || 0) < (business.minutes_limit || 10);
+
+        if (canUsePremium) {
+            const ttsUrl = `${req.protocol}://${req.get('host')}/api/voice/tts?businessId=${business.id}&text=${encodeURIComponent(greeting)}`;
+            twiml.play(ttsUrl);
+        } else {
+            twiml.say({ voice: 'Polly.Joanna' }, greeting);
+        }
 
         // Gather speech input
         const gather = twiml.gather({
@@ -675,7 +762,16 @@ Keep responses very brief (under 30 words) for voice calls.`;
 
         // Respond with TwiML
         const twiml = new VoiceResponse();
-        twiml.say({ voice: 'Polly.Joanna' }, aiResponse);
+
+        // Use premium voice if enabled
+        const canUsePremium = ELEVENLABS_API_KEY && (business.minutes_used || 0) < (business.minutes_limit || 10);
+
+        if (canUsePremium) {
+            const ttsUrl = `${req.protocol}://${req.get('host')}/api/voice/tts?businessId=${business.id}&text=${encodeURIComponent(aiResponse)}`;
+            twiml.play(ttsUrl);
+        } else {
+            twiml.say({ voice: 'Polly.Joanna' }, aiResponse);
+        }
 
         // Continue conversation
         twiml.gather({
@@ -685,7 +781,13 @@ Keep responses very brief (under 30 words) for voice calls.`;
             language: 'en-US'
         });
 
-        twiml.say({ voice: 'Polly.Joanna' }, 'Is there anything else I can help with?');
+        if (canUsePremium) {
+            const followUp = 'Is there anything else I can help with?';
+            const followUpUrl = `${req.protocol}://${req.get('host')}/api/voice/tts?businessId=${business.id}&text=${encodeURIComponent(followUp)}`;
+            twiml.play(followUpUrl);
+        } else {
+            twiml.say({ voice: 'Polly.Joanna' }, 'Is there anything else I can help with?');
+        }
         twiml.hangup();
 
         res.type('text/xml').send(twiml.toString());
