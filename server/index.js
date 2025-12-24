@@ -54,8 +54,8 @@ const isResend = emailPass.startsWith('re_');
 const transporter = nodemailer.createTransport({
     // If it looks like a Resend key, FORCE Resend host. Ignore Render's SMTP_HOST if set incorrectly.
     host: isResend ? 'smtp.resend.com' : (process.env.SMTP_HOST || 'smtp.gmail.com'),
-    port: parseInt(process.env.SMTP_PORT || '465'),
-    secure: process.env.SMTP_SECURE === 'true' || true,
+    port: parseInt(process.env.SMTP_PORT || '587'), // Use 587 (STARTTLS) for better compatibility
+    secure: process.env.SMTP_SECURE === 'true' || false, // False for 587
     auth: {
         user: process.env.SMTP_USER || (isResend ? 'resend' : (process.env.SENDER_EMAIL || process.env.PAYONEER_EMAIL)),
         pass: emailPass
@@ -471,7 +471,9 @@ app.get('/api/admin/payments', requireAdmin, async (req, res) => {
 app.post('/api/admin/approve', requireAdmin, async (req, res) => {
     const { requestId } = req.body;
     try {
-        const supabase = createClient(supabaseUrl, supabaseKey);
+        // Use SERVICE ROLE KEY to bypass RLS for admin updates (Required for 'businesses' table update)
+        const adminSupabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || supabaseKey;
+        const supabase = createClient(supabaseUrl, adminSupabaseKey);
 
         // 1. Get Request
         const { data: request } = await supabase
