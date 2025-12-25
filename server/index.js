@@ -138,6 +138,8 @@ app.post('/api/setup', async (req, res) => {
             tone,
             working_hours: workingHours || '9 AM - 5 PM',
             greeting
+        }, {
+            onConflict: 'user_id'  // Specify which column is the unique constraint
         })
         .select()
         .single();
