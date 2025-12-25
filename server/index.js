@@ -98,7 +98,7 @@ app.get('/api/health', (req, res) => {
     res.json({
         status: 'ok',
         model: 'gemini-flash-latest',
-        deployment: '2025-12-25-voice-fix-v1'
+        deployment: '2025-12-25-model-fix-v1'
     });
 });
 
@@ -311,7 +311,7 @@ app.all('/api/voice/tts', async (req, res) => {
             },
             body: JSON.stringify({
                 text,
-                model_id: 'eleven_monolingual_v1',
+                model_id: 'eleven_turbo_v2_5', // Free tier compatible model
                 voice_settings: { stability: 0.5, similarity_boost: 0.5 }
             })
         });
