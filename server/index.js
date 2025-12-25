@@ -78,7 +78,7 @@ if (isResendKey) {
 
 // ElevenLabs Setup
 const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
-const ELEVENLABS_VOICE_ID = process.env.ELEVENLABS_VOICE_ID || 'XrExE9yKIg1WjnnlVkGX'; // Matilda (Knowledgeable, Professional) - Premade
+const ELEVENLABS_VOICE_ID = process.env.ELEVENLABS_VOICE_ID || 'pqHfZKP75CvOlQylNhV4'; // Bill (Wise, Mature, Balanced) - Premade
 const ELEVENLABS_AGENT_ID = 'agent_6901kd70rt78ecvt04kzgg4kbbzr'; // Reference for future use
 
 
@@ -98,7 +98,7 @@ app.get('/api/health', (req, res) => {
     res.json({
         status: 'ok',
         model: 'gemini-flash-latest',
-        deployment: '2025-12-25-model-fix-v1'
+        deployment: '2025-12-25-bill-voice-v1'
     });
 });
 
