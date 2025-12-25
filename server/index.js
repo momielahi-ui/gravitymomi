@@ -98,7 +98,7 @@ app.get('/api/health', (req, res) => {
     res.json({
         status: 'ok',
         model: 'gemini-flash-latest',
-        deployment: '2025-12-24-elevenlabs-v1'
+        deployment: '2025-12-25-ai-fix-v1'
     });
 });
 
