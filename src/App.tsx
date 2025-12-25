@@ -1063,12 +1063,30 @@ const VoiceDemoView: React.FC<VoiceDemoViewProps> = ({ config, isDemoMode }) => 
 
     } catch (e) {
       console.warn("[TTS] Falling back to browser synthesis:", e);
-      // Fallback: Browser Speech Synthesis
+      // Fallback: Browser Speech Synthesis with Bill-like voice (Wise, Mature, Balanced)
       const utterance = new SpeechSynthesisUtterance(text);
       activeUtteranceRef.current = utterance;
       const voices = synthRef.current.getVoices();
-      const preferredVoice = voices.find(v => v.name.includes('Google') || (v.name.includes('Microsoft') && v.name.includes('Female'))) || voices.find(v => v.lang.startsWith('en')) || voices[0];
-      if (preferredVoice) utterance.voice = preferredVoice;
+
+      // Prefer deep male voices similar to Bill
+      const preferredVoice =
+        voices.find(v => v.name.toLowerCase().includes('david')) || // Microsoft David (deep male)
+        voices.find(v => v.name.toLowerCase().includes('alex')) ||  // macOS Alex (mature male)
+        voices.find(v => v.name.toLowerCase().includes('male') && v.lang.startsWith('en')) ||
+        voices.find(v => v.lang.startsWith('en-US') && !v.name.toLowerCase().includes('female')) ||
+        voices.find(v => v.lang.startsWith('en')) ||
+        voices[0];
+
+      if (preferredVoice) {
+        utterance.voice = preferredVoice;
+        console.log(`[TTS] Using voice: ${preferredVoice.name}`);
+      }
+
+      // Configure for mature, balanced sound like Bill
+      utterance.pitch = 0.85; // Lower pitch for mature sound
+      utterance.rate = 0.95;  // Slightly slower for wise delivery
+      utterance.volume = 1.0;
+
       utterance.onend = () => { if (!isProcessingRef.current) setStatus('Idle'); };
       synthRef.current.speak(utterance);
     }
