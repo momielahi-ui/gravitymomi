@@ -354,12 +354,14 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete, isDemoMode }) => {
 
     if (isDemoMode) {
       // Skip backend API call for Demo Mode
-      // Map fields to match backend structure
+      // Map fields to match backend structure (include both field name formats)
       const configForBackend = {
+        name: formData.name,
         business_name: formData.name,
         services: formData.services,
         tone: formData.tone,
         greeting: formData.greeting,
+        workingHours: formData.workingHours,
         working_hours: formData.workingHours
       };
       setTimeout(() => {
