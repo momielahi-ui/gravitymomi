@@ -78,8 +78,8 @@ if (isResendKey) {
 
 // ElevenLabs Setup
 const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
-const ELEVENLABS_VOICE_ID = process.env.ELEVENLABS_VOICE_ID || '21m0ndc2ac8ve1O2Pn7W'; // Rachel (High quality)
-const ELEVENLABS_AGENT_ID = 'agent_6901kd70rt78ecvt04kzgg4kbbzr'; // Store this just in case for future use
+const ELEVENLABS_VOICE_ID = process.env.ELEVENLABS_VOICE_ID || 'XrExE9yKIg1WjnnlVkGX'; // Matilda (Knowledgeable, Professional) - Premade
+const ELEVENLABS_AGENT_ID = 'agent_6901kd70rt78ecvt04kzgg4kbbzr'; // Reference for future use
 
 
 // Helper to estimate minutes from characters (approx 1000 chars = 1 min)
@@ -98,7 +98,7 @@ app.get('/api/health', (req, res) => {
     res.json({
         status: 'ok',
         model: 'gemini-flash-latest',
-        deployment: '2025-12-25-ai-fix-v1'
+        deployment: '2025-12-25-voice-fix-v1'
     });
 });
 
