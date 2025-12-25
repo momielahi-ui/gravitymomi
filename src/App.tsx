@@ -1009,8 +1009,21 @@ const VoiceDemoView: React.FC<VoiceDemoViewProps> = ({ config, isDemoMode }) => 
         if (done) break;
       }
 
-      // Speak remaining
-      if (buffer.trim()) speak(buffer.trim());
+      // For demo mode, parse JSON response
+      if (isDemoMode) {
+        try {
+          const jsonResponse = JSON.parse(buffer);
+          const actualText = jsonResponse.response || buffer;
+          setAiResponse(actualText);
+          speak(actualText);
+        } catch {
+          // Not JSON, speak as-is
+          if (buffer.trim()) speak(buffer.trim());
+        }
+      } else {
+        // Speak remaining for streaming mode
+        if (buffer.trim()) speak(buffer.trim());
+      }
 
     } catch (err: any) {
       console.error("Voice chat error:", err);
