@@ -604,7 +604,7 @@ app.post('/api/admin/approve', requireAdmin, async (req, res) => {
 
         if (updateError) throw updateError;
 
-        // 3. Update Business Limits
+        // 3. Update or Create Business Record
         const limits = {
             'starter': 100,
             'growth': 500,
@@ -612,13 +612,41 @@ app.post('/api/admin/approve', requireAdmin, async (req, res) => {
         };
         const newLimit = limits[request.plan] || 10;
 
-        await supabase
+        // Check if business record exists
+        const { data: existingBusiness } = await supabase
             .from('businesses')
-            .update({
-                subscription_plan: request.plan,
-                minutes_limit: newLimit
-            })
-            .eq('id', request.business_id);
+            .select('id')
+            .eq('id', request.business_id)
+            .single();
+
+        if (existingBusiness) {
+            // Business exists, update it
+            console.log(`[Admin] Updating existing business ${request.business_id}`);
+            await supabase
+                .from('businesses')
+                .update({
+                    subscription_plan: request.plan,
+                    minutes_limit: newLimit
+                })
+                .eq('id', request.business_id);
+        } else {
+            // Business doesn't exist, create it
+            console.log(`[Admin] Creating new business record for ${request.business_id}`);
+            const businessName = request.email?.split('@')[0] || 'My Business';
+            await supabase
+                .from('businesses')
+                .insert({
+                    id: request.business_id,
+                    user_id: request.user_id,
+                    business_name: businessName,
+                    services: 'AI Receptionist Services',
+                    tone: 'professional and friendly',
+                    working_hours: '9 AM - 5 PM',
+                    subscription_plan: request.plan,
+                    minutes_limit: newLimit,
+                    minutes_used: 0
+                });
+        }
 
         // 4. Manual Email (User requested to disable auto-email)
         console.log(`[Admin] Payment approved for ${request.email}. Email notifications are disabled.`);
