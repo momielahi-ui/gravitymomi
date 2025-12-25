@@ -996,13 +996,16 @@ const VoiceDemoView: React.FC<VoiceDemoViewProps> = ({ config, isDemoMode }) => 
           buffer += chunk;
           setAiResponse(prev => prev + chunk); // Optimistic UI update
 
-          // Check for sentence boundaries
-          const sentences = buffer.split(/([.!?]+(?:\s|$))/);
-          if (sentences.length > 1) {
-            const sentenceToSpeak = sentences[0] + (sentences[1] || '');
-            if (sentenceToSpeak.trim()) {
-              speak(sentenceToSpeak.trim());
-              buffer = buffer.slice(sentenceToSpeak.length);
+          // Only speak during streaming for authenticated mode (not demo)
+          if (!isDemoMode) {
+            // Check for sentence boundaries
+            const sentences = buffer.split(/([.!?]+(?:\s|$))/);
+            if (sentences.length > 1) {
+              const sentenceToSpeak = sentences[0] + (sentences[1] || '');
+              if (sentenceToSpeak.trim()) {
+                speak(sentenceToSpeak.trim());
+                buffer = buffer.slice(sentenceToSpeak.length);
+              }
             }
           }
         }
