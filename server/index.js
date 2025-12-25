@@ -244,14 +244,34 @@ app.post('/api/chat', async (req, res) => {
 
         const result = await chat.sendMessageStream(message);
 
-        // Demo mode: Return JSON response
+        // Demo mode: Return JSON response with timeout protection
         if (isDemoMode) {
             console.log('[Chat] Demo mode: collecting full response for JSON');
             let fullResponse = '';
-            for await (const chunk of result.stream) {
-                fullResponse += chunk.text();
+
+            try {
+                // Add 30-second timeout to prevent hanging
+                const timeoutPromise = new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error('Gemini API timeout')), 30000)
+                );
+
+                const responsePromise = (async () => {
+                    for await (const chunk of result.stream) {
+                        fullResponse += chunk.text();
+                    }
+                    return fullResponse;
+                })();
+
+                fullResponse = await Promise.race([responsePromise, timeoutPromise]);
+                console.log('[Chat] Demo response collected successfully');
+                return res.json({ response: fullResponse });
+            } catch (err) {
+                console.error('[Chat] Demo mode error:', err.message);
+                return res.status(500).json({
+                    error: 'AI response timeout. Please try again.',
+                    response: fullResponse || 'Sorry, I\'m having trouble responding right now. Please try again.'
+                });
             }
-            return res.json({ response: fullResponse });
         }
 
         // Authenticated mode: Stream response
