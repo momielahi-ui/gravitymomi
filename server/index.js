@@ -78,7 +78,8 @@ if (isResendKey) {
 
 // ElevenLabs Setup
 const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
-const ELEVENLABS_VOICE_ID = process.env.ELEVENLABS_VOICE_ID || 'agent_6901kd70rt78ecvt04kzgg4kbbzr';
+const ELEVENLABS_VOICE_ID = process.env.ELEVENLABS_VOICE_ID || '21m0ndc2ac8ve1O2Pn7W'; // Rachel (High quality)
+const ELEVENLABS_AGENT_ID = 'agent_6901kd70rt78ecvt04kzgg4kbbzr'; // Store this just in case for future use
 
 
 // Helper to estimate minutes from characters (approx 1000 chars = 1 min)
@@ -164,25 +165,36 @@ app.post('/api/chat', async (req, res) => {
         const isDemoMode = !!config;
 
         if (!config) {
-            // Authenticated flow: Get user and fetch from DB
-            user = await getUser(req);
-            if (!user) return res.status(401).json({ error: 'Unauthorized' });
+            // Check for legacy demo calls from outdated frontend (Vercel lag)
+            if (req.body.businessId === 'demo' || !req.headers.authorization) {
+                console.log('[Chat] Using demo fallback config');
+                config = {
+                    business_name: 'Smart Reception Demo',
+                    services: 'AI Receptionist Services',
+                    working_hours: '24/7',
+                    tone: 'friendly and professional'
+                };
+            } else {
+                // Authenticated flow: Get user and fetch from DB
+                user = await getUser(req);
+                if (!user) return res.status(401).json({ error: 'Unauthorized' });
 
-            const token = req.headers.authorization?.split(' ')[1];
-            if (!token) return res.status(401).json({ error: 'Missing token' });
+                const token = req.headers.authorization?.split(' ')[1];
+                if (!token) return res.status(401).json({ error: 'Missing token' });
 
-            const supabase = getSupabaseClient(token);
-            const { data: dbConfig, error } = await supabase
-                .from('businesses')
-                .select('*')
-                .eq('user_id', user.id)
-                .single();
+                const supabase = getSupabaseClient(token);
+                const { data: dbConfig, error } = await supabase
+                    .from('businesses')
+                    .select('*')
+                    .eq('user_id', user.id)
+                    .single();
 
-            if (error || !dbConfig) {
-                return res.status(400).json({ error: 'Business configuration not found' });
+                if (error || !dbConfig) {
+                    return res.status(400).json({ error: 'Business configuration not found' });
+                }
+                config = dbConfig;
             }
-            config = dbConfig;
-        }
+        } // Close if (!config)
 
         if (!config) {
             return res.status(400).json({ error: 'Business not configured' });
