@@ -385,7 +385,17 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete, isDemoMode }) => {
 
       const data = await res.json();
       if (data.success) {
-        onComplete(formData);
+        // Map fields to match backend structure (same as demo mode)
+        const configForBackend = {
+          name: formData.name,
+          business_name: formData.name,
+          services: formData.services,
+          tone: formData.tone,
+          greeting: formData.greeting,
+          workingHours: formData.workingHours,
+          working_hours: formData.workingHours
+        };
+        onComplete(configForBackend as BusinessConfig);
       } else {
         throw new Error(data.error || 'Setup failed. Please try again.');
       }

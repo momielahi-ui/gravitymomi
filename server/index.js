@@ -519,6 +519,11 @@ app.post('/api/billing/pay', async (req, res) => {
     const user = await getUser(req); // Retrieve user from auth header
     if (!user) return res.status(401).json({ error: 'Unauthorized' });
 
+    // Safety check for req.body
+    if (!req.body) {
+        return res.status(400).json({ error: 'Request body is required' });
+    }
+
     const { plan, amount, paymentMethod, reference, businessId } = req.body;
 
     if (!plan || !amount || !paymentMethod || !reference) {
