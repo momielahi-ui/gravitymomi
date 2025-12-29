@@ -36,16 +36,16 @@ const getUser = async (req) => {
     // Robust extraction: Handle "Bearer <token>" or just "<token>"
     let token = authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : authHeader;
 
-    // Sanitize: Remove extra quotes or whitespace which might cause "illegal base64" errors
-    token = token?.trim().replace(/['"]+/g, '');
+    // Sanitize: Only trim whitespace. DO NOT remove quotes blindly as it might corrupt valid chars or mask real frontend issues.
+    token = token?.trim();
 
     if (!token) {
         console.log('[Auth] Token is empty after extraction');
         return null;
     }
 
-    // Debug log (safe)
-    console.log(`[Auth] Extracted Token (first 10 chars): ${token.substring(0, 10)}... Length: ${token.length}`);
+    // Debug log (safe) - Log first few chars to check for "Bearer" repetition or quotes
+    console.log(`[Auth] Extracted Token: ${token.substring(0, 15)}... (Length: ${token.length})`);
 
     const supabase = createClient(supabaseUrl, supabaseKey);
     // console.log('[Auth] Calling supabase.auth.getUser'); 
