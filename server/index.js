@@ -173,8 +173,16 @@ app.post('/api/chat', async (req, res) => {
         const isDemoMode = !!config;
 
         if (!config) {
+            console.log('[Chat] Config not in body. Checking headers/demo mode...');
+            if (req.headers.authorization) {
+                console.log('[Chat] Auth header present length:', req.headers.authorization.length);
+            } else {
+                console.log('[Chat] No auth header');
+            }
+
             // Check for legacy demo calls from outdated frontend (Vercel lag)
             if (req.body.businessId === 'demo' || !req.headers.authorization) {
+                console.log('[Chat] Entering demo fallback path');
                 console.log('[Chat] Using demo fallback config');
                 config = {
                     business_name: 'Smart Reception Demo',
