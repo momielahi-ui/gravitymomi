@@ -27,16 +27,39 @@ const supabaseKey = process.env.SUPABASE_ANON_KEY; // Using Anon Key for client 
 // Helper to get user from token
 const getUser = async (req) => {
     console.log('[Auth] getUser called');
-    const token = req.headers.authorization?.split(' ')[1];
-    if (!token) {
-        console.log('[Auth] No token found');
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+        console.log('[Auth] No Authorization header found');
         return null;
     }
 
+    // Robust extraction: Handle "Bearer <token>" or just "<token>"
+    let token = authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : authHeader;
+
+    // Sanitize: Remove extra quotes or whitespace which might cause "illegal base64" errors
+    token = token?.trim().replace(/['"]+/g, '');
+
+    if (!token) {
+        console.log('[Auth] Token is empty after extraction');
+        return null;
+    }
+
+    // Debug log (safe)
+    console.log(`[Auth] Extracted Token (first 10 chars): ${token.substring(0, 10)}... Length: ${token.length}`);
+
     const supabase = createClient(supabaseUrl, supabaseKey);
-    console.log('[Auth] Calling supabase.auth.getUser');
+    // console.log('[Auth] Calling supabase.auth.getUser'); 
     const { data: { user }, error } = await supabase.auth.getUser(token);
-    console.log('[Auth] supabase.auth.getUser returned', { hasUser: !!user, error: error?.message });
+
+    if (error) {
+        console.error('[Auth] supabase.auth.getUser failed:', error.message);
+        // Special handling for the specific "illegal base64" causing crashes or confusion
+        if (error.message.includes('illegal base64')) {
+            console.error('[Auth] CRITICAL: Token malformed. Check frontend sending logic.');
+        }
+    } else {
+        console.log('[Auth] User verified:', user?.id);
+    }
 
     if (error || !user) return null;
     return user;
