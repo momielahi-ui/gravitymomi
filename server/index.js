@@ -26,11 +26,17 @@ const supabaseKey = process.env.SUPABASE_ANON_KEY; // Using Anon Key for client 
 
 // Helper to get user from token
 const getUser = async (req) => {
+    console.log('[Auth] getUser called');
     const token = req.headers.authorization?.split(' ')[1];
-    if (!token) return null;
+    if (!token) {
+        console.log('[Auth] No token found');
+        return null;
+    }
 
     const supabase = createClient(supabaseUrl, supabaseKey);
+    console.log('[Auth] Calling supabase.auth.getUser');
     const { data: { user }, error } = await supabase.auth.getUser(token);
+    console.log('[Auth] supabase.auth.getUser returned', { hasUser: !!user, error: error?.message });
 
     if (error || !user) return null;
     return user;
@@ -178,12 +184,16 @@ app.post('/api/chat', async (req, res) => {
                 };
             } else {
                 // Authenticated flow: Get user and fetch from DB
+                console.log('[Chat] Authenticated flow: Getting user...');
                 user = await getUser(req);
+                console.log('[Chat] User retrieved:', user?.id);
+
                 if (!user) return res.status(401).json({ error: 'Unauthorized' });
 
                 const token = req.headers.authorization?.split(' ')[1];
                 if (!token) return res.status(401).json({ error: 'Missing token' });
 
+                console.log('[Chat] Fetching business config for user:', user.id);
                 const supabase = getSupabaseClient(token);
                 const { data: dbConfig, error } = await supabase
                     .from('businesses')
@@ -191,7 +201,10 @@ app.post('/api/chat', async (req, res) => {
                     .eq('user_id', user.id)
                     .single();
 
+                console.log('[Chat] DB Fetch result:', { hasConfig: !!dbConfig, error: error?.message });
+
                 if (error || !dbConfig) {
+                    console.error('[Chat] Business config missing for user:', user.id);
                     return res.status(400).json({ error: 'Business configuration not found' });
                 }
                 config = dbConfig;
