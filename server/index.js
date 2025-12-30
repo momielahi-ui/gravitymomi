@@ -36,11 +36,19 @@ const getUser = async (req) => {
     // Robust extraction: Handle "Bearer <token>" or just "<token>"
     let token = authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : authHeader;
 
-    // Sanitize: Only trim whitespace. DO NOT remove quotes blindly as it might corrupt valid chars or mask real frontend issues.
+    // Sanitize: 
+    // 1. Trim whitespace
     token = token?.trim();
 
+    // 2. Remove surrounding quotes if they exist (handling both " and ')
+    if (token) {
+        if ((token.startsWith('"') && token.endsWith('"')) || (token.startsWith("'") && token.endsWith("'"))) {
+            token = token.slice(1, -1);
+        }
+    }
+
     if (!token) {
-        console.log('[Auth] Token is empty after extraction');
+        console.log('[Auth] Token is empty after extraction/sanitization');
         return null;
     }
 
