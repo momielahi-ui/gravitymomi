@@ -2,48 +2,134 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --font-sans: 'Inter', sans-serif;
-  --font-heading: 'Space Grotesk', sans-serif;
+@layer base {
+  :root {
+    --background: 0 0% 0%;
+    /* True Black */
+    --foreground: 0 0% 98%;
+
+    --card: 0 0% 5%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 0 0% 5%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 9%;
+
+    --secondary: 0 0% 12%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 0 0% 12%;
+    --muted-foreground: 0 0% 55%;
+    /* Titanium Grey */
+
+    --accent: 0 0% 12%;
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 0 0% 12%;
+    --input: 0 0% 12%;
+    --ring: 0 0% 98%;
+
+    --radius: 1.5rem;
+    /* 24px default */
+  }
+
+  body {
+    @apply bg-black text-white antialiased selection:bg-white/20;
+    font-feature-settings: "ss01", "ss02", "cv01", "cv02";
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply tracking-tighter font-medium text-white;
+  }
 }
 
-body {
-  font-family: var(--font-sans);
-  background-color: #09090b; /* Zinc 950 */
-  color: #f4f4f5; /* Zinc 100 */
+@layer components {
+
+  /* Apple "Pro" Glass */
+  .glass-panel-pro {
+    @apply bg-zinc-900/40 backdrop-blur-2xl border border-white/[0.08] shadow-2xl shadow-black/50;
+  }
+
+  .glass-panel-active {
+    @apply bg-zinc-800/60 backdrop-blur-3xl border border-white/[0.15] shadow-2xl ring-1 ring-white/10;
+  }
+
+  .btn-apple {
+    @apply rounded-full font-medium transition-all duration-300 active:scale-95 disabled:active:scale-100 disabled:opacity-50;
+  }
+
+  .input-apple {
+    @apply bg-zinc-900/50 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-white/20 focus:bg-zinc-800/80 transition-all duration-300;
+  }
 }
 
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-heading);
+@layer utilities {
+  .text-titanium {
+    @apply text-zinc-400;
+  }
+
+  .text-glow {
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-pulse-slow {
+    animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  .animate-orb {
+    animation: orb-breathe 4s ease-in-out infinite;
+  }
+
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-zinc-800 rounded-full hover:bg-zinc-700 transition;
+  }
 }
 
-/* Glassmorphism Utilities */
-.glass-panel {
-  background: rgba(24, 24, 27, 0.4); /* Zinc 900 with opacity */
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
 }
 
-.glass-panel-hover:hover {
-  background: rgba(24, 24, 27, 0.6);
-  border-color: rgba(255, 255, 255, 0.12);
-}
+@keyframes orb-breathe {
 
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-}
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
 
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #27272a;
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #3f3f46;
+  50% {
+    transform: scale(1.05);
+    opacity: 1;
+  }
 }

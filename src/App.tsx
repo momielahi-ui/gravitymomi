@@ -19,7 +19,7 @@ interface CardProps {
 
 const Card: React.FC<CardProps> = ({ children, className = '', onClick }) => (
   <div
-    className={`glass-panel rounded-xl shadow-lg transition-all duration-300 ${className} ${onClick ? 'cursor-pointer hover:scale-[1.01] hover:shadow-xl glass-panel-hover' : ''}`}
+    className={`glass-panel-pro rounded-[32px] p-8 transition-all duration-500 ease-out ${className} ${onClick ? 'cursor-pointer hover:bg-zinc-800/40 hover:scale-[1.01] hover:shadow-2xl hover:shadow-black/60 active:scale-[0.99] glass-panel-active' : ''}`}
     onClick={onClick}
   >
     {children}
@@ -35,14 +35,14 @@ interface BadgeProps {
 
 const Badge: React.FC<BadgeProps> = ({ children, color = 'blue' }) => {
   const colors: Record<BadgeColor, string> = {
-    blue: 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20',
-    purple: 'bg-violet-500/10 text-violet-400 border border-violet-500/20',
-    green: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20',
-    amber: 'bg-amber-500/10 text-amber-400 border border-amber-500/20',
-    red: 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+    blue: 'bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 shadow-[0_0_15px_rgba(99,102,241,0.1)]',
+    purple: 'bg-violet-500/10 text-violet-300 border border-violet-500/20 shadow-[0_0_15px_rgba(139,92,246,0.1)]',
+    green: 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.1)]',
+    amber: 'bg-amber-500/10 text-amber-300 border border-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.1)]',
+    red: 'bg-rose-500/10 text-rose-300 border border-rose-500/20 shadow-[0_0_15px_rgba(244,63,94,0.1)]'
   };
   return (
-    <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${colors[color] || colors.blue}`}>
+    <span className={`px-3 py-1 rounded-full text-[11px] font-semibold tracking-wide uppercase ${colors[color] || colors.blue}`}>
       {children}
     </span>
   );
@@ -90,51 +90,57 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess, onTryDemo }) => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-10">
-          <div className="w-16 h-16 bg-gradient-to-tr from-indigo-500 to-violet-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-indigo-500/20">
-            <Sparkles className="w-8 h-8 text-white relative z-10" />
+    <div className="min-h-screen grid place-items-center p-4 relative overflow-hidden">
+      {/* Background Ambience */}
+      <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-indigo-500/10 blur-[120px] rounded-full mix-blend-screen animate-pulse-slow"></div>
+      <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-blue-500/10 blur-[120px] rounded-full mix-blend-screen animate-pulse-slow" style={{ animationDelay: '2s' }}></div>
+
+      <div className="w-full max-w-md relative z-10">
+        <div className="text-center mb-10 space-y-4">
+          <div className="w-20 h-20 bg-black/40 backdrop-blur-2xl border border-white/10 rounded-[28px] flex items-center justify-center mx-auto shadow-2xl shadow-indigo-500/10 animate-float">
+            <Sparkles className="w-10 h-10 text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]" />
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">SmartReception.ai</h1>
-          <p className="text-slate-400">Sign in to manage your AI workforce.</p>
+          <div>
+            <h1 className="text-4xl font-semibold tracking-tight text-white drop-shadow-sm">SmartReception.ai</h1>
+            <p className="text-titanium text-lg font-light tracking-wide mt-2">Your AI workforce, perfectly managed.</p>
+          </div>
         </div>
 
-        <Card className="p-8">
+        <Card className="!p-8 backdrop-blur-3xl bg-black/40 border-white/10">
           <form onSubmit={handleAuth} className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">Email Address</label>
-              <div className="relative">
+              <label className="block text-xs font-semibold text-titanium uppercase tracking-wider mb-2 ml-1">Email Address</label>
+              <div className="relative group">
                 <input
                   type="email"
                   required
                   autoComplete="off"
-                  className="w-full bg-zinc-900/50 border border-zinc-800 text-white rounded-xl pl-10 pr-4 py-3.5 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all duration-300 placeholder-zinc-500"
-                  placeholder="you@company.com"
+                  className="w-full input-apple pl-11"
+                  placeholder="name@company.com"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                 />
-                <Mail className="absolute left-3 top-3.5 w-5 h-5 text-slate-500" />
+                <Mail className="absolute left-4 top-3.5 w-5 h-5 text-zinc-500 group-focus-within:text-white transition-colors duration-300" />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">Password</label>
-              <div className="relative">
+              <label className="block text-xs font-semibold text-titanium uppercase tracking-wider mb-2 ml-1">Password</label>
+              <div className="relative group">
                 <input
                   type="password"
                   required
-                  className="w-full bg-zinc-900/50 border border-zinc-800 text-white rounded-xl pl-10 pr-4 py-3.5 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all duration-300 placeholder-zinc-500"
+                  className="w-full input-apple pl-11"
                   placeholder="••••••••"
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                 />
-                <Lock className="absolute left-3 top-3.5 w-5 h-5 text-slate-500" />
+                <Lock className="absolute left-4 top-3.5 w-5 h-5 text-zinc-500 group-focus-within:text-white transition-colors duration-300" />
               </div>
             </div>
 
             {error && (
-              <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-sm text-red-400 text-center">
+              <div className="p-3 bg-red-500/10 border border-red-500/10 rounded-2xl text-sm text-red-300 text-center font-medium">
                 {error}
               </div>
             )}
@@ -142,41 +148,33 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess, onTryDemo }) => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-3.5 rounded-xl font-semibold transition-all duration-300 disabled:opacity-50 flex items-center justify-center shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 transform hover:-translate-y-0.5"
+              className="w-full btn-apple bg-white text-black hover:bg-zinc-200 py-4 text-sm font-semibold shadow-lg shadow-white/5"
             >
               {loading ? 'Processing...' : (isSignUp ? 'Create Account' : 'Sign In')}
             </button>
 
             <div className="relative my-6">
-              <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-700"></div></div>
-              <div className="relative flex justify-center text-sm"><span className="px-2 bg-slate-800 text-slate-400">Or</span></div>
+              <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/5"></div></div>
+              <div className="relative flex justify-center text-xs uppercase tracking-widest"><span className="px-3 bg-black/40 text-zinc-600 backdrop-blur-xl">Or</span></div>
             </div>
 
             <button
               type="button"
               onClick={onTryDemo}
-              className="w-full bg-zinc-800 hover:bg-zinc-700 text-white py-3.5 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center gap-2 group border border-zinc-700 hover:border-zinc-600"
+              className="w-full btn-apple bg-zinc-900/50 hover:bg-zinc-800 text-white border border-white/10 py-4 flex items-center justify-center gap-2 group text-sm"
             >
               <Sparkles className="w-4 h-4 text-indigo-400 group-hover:text-indigo-300" />
-              Try Demo Free
+              Try Demo Mode
             </button>
 
-            <div className="mt-8 pt-6 border-t border-slate-800 text-center">
-              <p className="text-[10px] text-slate-600 font-mono break-all uppercase tracking-widest">
-                Diagnostic: {API_URL}
-              </p>
-              <div className="mt-2 flex flex-col items-center gap-1">
-                <div className="flex items-center gap-2">
-                  <div className={`w-2 h-2 rounded-full ${API_URL.startsWith('https') ? 'bg-green-500' : 'bg-red-500 animate-pulse'}`} />
-                  <span className="text-[10px] text-slate-500 uppercase">
-                    {API_URL.startsWith('https') ? 'Secure API' : (API_URL.includes('localhost') ? 'Check Vercel Env!' : 'Insecure API')}
+            <div className="mt-8 pt-6 border-t border-white/5 text-center">
+              <div className="flex flex-col items-center gap-2 opacity-50 hover:opacity-100 transition-opacity duration-300">
+                <div className="flex items-center gap-2 bg-black/30 px-3 py-1 rounded-full border border-white/5">
+                  <div className={`w-1.5 h-1.5 rounded-full ${API_URL.startsWith('https') ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-red-500 animate-pulse'}`} />
+                  <span className="text-[10px] text-zinc-400 font-mono tracking-wider">
+                    {API_URL.startsWith('https') ? 'SECURE CONNECTION' : 'INSECURE CONNECTION'}
                   </span>
                 </div>
-                {!API_URL.startsWith('https') && (
-                  <p className="text-[8px] text-red-500 font-bold uppercase text-center mt-1 leading-tight">
-                    Mobile blocks "http"! <br /> Set VITE_API_URL to https in Vercel
-                  </p>
-                )}
               </div>
             </div>
           </form>
@@ -184,7 +182,7 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess, onTryDemo }) => {
           <div className="mt-6 text-center">
             <button
               onClick={() => setIsSignUp(!isSignUp)}
-              className="text-sm text-slate-400 hover:text-white transition"
+              className="text-sm text-titanium hover:text-white transition-colors duration-300 font-medium"
             >
               {isSignUp ? 'Already have an account? Sign In' : "Don't have an account? Sign Up"}
             </button>
@@ -257,10 +255,12 @@ const UsageCard: React.FC<{ used: number; limit: number }> = ({ used, limit }) =
   const isCritical = percentage >= 100;
 
   return (
-    <Card className="p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="font-bold text-white flex items-center gap-2 text-lg">
-          <Clock className="w-5 h-5 text-indigo-400" />
+    <Card className="p-6 relative overflow-hidden">
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="font-semibold text-white flex items-center gap-3 text-lg tracking-tight">
+          <div className="p-2 bg-indigo-500/10 rounded-xl border border-indigo-500/20">
+            <Clock className="w-5 h-5 text-indigo-400" />
+          </div>
           Plan Usage
         </h3>
         <Badge color={isCritical ? 'red' : isWarning ? 'amber' : 'green'}>
@@ -268,22 +268,23 @@ const UsageCard: React.FC<{ used: number; limit: number }> = ({ used, limit }) =
         </Badge>
       </div>
 
-      <div className="mb-2 flex justify-between text-sm">
-        <span className="text-slate-400">Monthly Minutes</span>
-        <span className="text-white font-medium">{used} / {limit} min</span>
+      <div className="mb-3 flex justify-between text-xs font-medium uppercase tracking-wider">
+        <span className="text-titanium">Minutes Used</span>
+        <span className="text-white">{used} / {limit}</span>
       </div>
 
-      <div className="w-full bg-zinc-800 rounded-full h-2 overflow-hidden">
+      <div className="w-full bg-zinc-800/50 rounded-full h-1.5 overflow-hidden mb-6">
         <div
-          className={`h-full rounded-full transition-all duration-500 shadow-lg ${isCritical ? 'bg-red-500' : isWarning ? 'bg-amber-500' : 'bg-emerald-500'}`}
+          className={`h-full rounded-full transition-all duration-700 ease-out shadow-[0_0_10px_currentColor] ${isCritical ? 'bg-red-500 text-red-500' : isWarning ? 'bg-amber-500 text-amber-500' : 'bg-emerald-500 text-emerald-500'}`}
           style={{ width: `${percentage}%` }}
         />
       </div>
 
       {isCritical && (
-        <p className="mt-4 text-xs text-red-400 bg-red-500/10 p-2 rounded border border-red-500/20">
-          Calls are currently blocked. Please upgrade your plan to continue receiving calls.
-        </p>
+        <div className="text-xs text-red-300 bg-red-500/5 p-3 rounded-2xl border border-red-500/10 flex items-start gap-2">
+          <svg className="w-4 h-4 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+          <p>Calls are currently blocked. Please upgrade to Pro.</p>
+        </div>
       )}
     </Card>
   );
@@ -297,27 +298,35 @@ const PricingCard: React.FC<{
   features: string[];
   onClick?: () => void;
 }> = ({ plan, price, mins, current, features, onClick }) => (
-  <Card className={`p-6 relative overflow-hidden flex flex-col group ${current ? 'ring-1 ring-indigo-500/50 bg-indigo-500/5' : 'opacity-70 hover:opacity-100 hover:bg-zinc-800/50'}`}>
+  <Card className={`p-8 relative overflow-hidden flex flex-col group ${current ? 'ring-1 ring-white/20 bg-white/[0.03]' : 'opacity-80 hover:opacity-100'}`} onClick={onClick}>
     {current && (
-      <div className="absolute top-0 right-0 bg-indigo-600 text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl shadow-lg shadow-indigo-500/20">
-        CURRENT PLAN
+      <div className="absolute top-4 right-4">
+        <div className="bg-white text-black text-[10px] font-bold px-3 py-1 rounded-full shadow-lg shadow-white/20">
+          ACTIVE
+        </div>
       </div>
     )}
 
-    <h3 className="text-xl font-bold text-white mb-1 capitalize">{plan}</h3>
-    <div className="flex items-baseline gap-1 mb-4">
-      <span className="text-2xl font-bold text-white">{price}</span>
-      <span className="text-sm text-slate-400">/mo</span>
+    <div className="mb-6">
+      <h3 className="text-lg font-semibold text-white mb-2">{plan}</h3>
+      <div className="flex items-baseline gap-1">
+        <span className="text-3xl font-bold text-white tracking-tight">{price}</span>
+        {price !== 'Free' && <span className="text-sm text-titanium font-medium">/mo</span>}
+      </div>
     </div>
 
-    <div className="space-y-3 mb-6">
-      <div className="flex items-center gap-2 text-sm text-zinc-400">
-        <Clock className="w-4 h-4 text-indigo-400" />
+    <div className="space-y-4 mb-8 flex-1">
+      <div className="flex items-center gap-3 text-sm text-zinc-300">
+        <div className="p-1 rounded-full bg-indigo-500/20 text-indigo-300">
+          <Clock className="w-3 h-3" />
+        </div>
         <span>{mins} mins/month</span>
       </div>
       {features.map((f, i) => (
-        <div key={i} className="flex items-center gap-2 text-sm text-zinc-400">
-          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+        <div key={i} className="flex items-center gap-3 text-sm text-zinc-300">
+          <div className="p-1 rounded-full bg-emerald-500/20 text-emerald-300">
+            <CheckCircle2 className="w-3 h-3" />
+          </div>
           <span>{f}</span>
         </div>
       ))}
@@ -325,13 +334,13 @@ const PricingCard: React.FC<{
 
     <button
       disabled={current}
-      className={`w-full py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 ${current
-        ? 'bg-zinc-800 text-zinc-500 cursor-default border border-zinc-700'
-        : 'bg-white text-zinc-950 hover:bg-zinc-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5'
+      className={`w-full py-4 rounded-full text-sm font-semibold transition-all duration-300 ${current
+        ? 'bg-zinc-800/50 text-zinc-500 cursor-default border border-white/5'
+        : 'btn-apple bg-white text-black hover:bg-zinc-200 shadow-lg shadow-white/10'
         }`}
-      onClick={onClick || (() => alert("Billing integration coming soon!"))}
+      onClick={e => { e.stopPropagation(); if (onClick) onClick(); }}
     >
-      {current ? 'Active Plan' : 'Upgrade'}
+      {current ? 'Current Plan' : 'Upgrade Plan'}
     </button>
   </Card>
 );
@@ -426,46 +435,73 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete, isDemoMode }) => {
   const prevStep = () => setStep(s => s - 1);
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-2xl">
-        <Card className="p-6 md:p-12 overflow-hidden relative">
-          <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">Setup Your Business</h2>
-          <p className="text-slate-400 mb-8">Step {step} of 3</p>
+    <div className="min-h-screen bg-black flex flex-col items-center justify-center p-4 relative overflow-hidden">
+      <div className="absolute inset-0 bg-indigo-500/5 blur-[150px] mix-blend-screen pointer-events-none"></div>
+
+      <div className="w-full max-w-2xl relative z-10">
+        <Card className="!p-10 backdrop-blur-3xl bg-black/60 border-white/10 shadow-2xl">
+          <div className="mb-8">
+            <h2 className="text-3xl font-semibold text-white mb-2 tracking-tight">Setup Your Business</h2>
+            <div className="flex items-center gap-2 text-sm">
+              <span className={`px-2 py-0.5 rounded-full ${step >= 1 ? 'bg-white text-black font-bold' : 'bg-zinc-800 text-zinc-500'}`}>1</span>
+              <div className={`h-0.5 w-8 ${step >= 2 ? 'bg-white' : 'bg-zinc-800'}`}></div>
+              <span className={`px-2 py-0.5 rounded-full ${step >= 2 ? 'bg-white text-black font-bold' : 'bg-zinc-800 text-zinc-500'}`}>2</span>
+              <div className={`h-0.5 w-8 ${step >= 3 ? 'bg-white' : 'bg-zinc-800'}`}></div>
+              <span className={`px-2 py-0.5 rounded-full ${step >= 3 ? 'bg-white text-black font-bold' : 'bg-zinc-800 text-zinc-500'}`}>3</span>
+            </div>
+          </div>
 
           <div className="space-y-6">
             {step === 1 && (
-              <>
-                <label htmlFor="businessName" className="block text-slate-300 font-medium text-sm">Business Name</label>
-                <input id="businessName" name="name" className="w-full bg-slate-900 border border-slate-700 text-white rounded-xl p-3 md:p-4 text-sm md:text-base outline-none focus:border-purple-500 transition" value={formData.name} onChange={handleInputChange} />
-                <label htmlFor="services" className="block text-slate-300 font-medium text-sm">Services & Offerings</label>
-                <textarea id="services" name="services" className="w-full bg-slate-900 border border-slate-700 text-white rounded-xl p-3 md:p-4 h-32 text-sm md:text-base outline-none focus:border-purple-500 transition" value={formData.services} onChange={handleInputChange} />
-              </>
+              <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-500">
+                <div>
+                  <label htmlFor="businessName" className="block text-xs font-semibold text-titanium uppercase tracking-wider mb-2 ml-1">Business Name</label>
+                  <input id="businessName" name="name" className="w-full input-apple" placeholder="Acme Corp" value={formData.name} onChange={handleInputChange} autoFocus />
+                </div>
+                <div>
+                  <label htmlFor="services" className="block text-xs font-semibold text-titanium uppercase tracking-wider mb-2 ml-1">Services & Offerings</label>
+                  <textarea id="services" name="services" className="w-full input-apple h-32 resize-none" placeholder="Describe what your business does..." value={formData.services} onChange={handleInputChange} />
+                </div>
+              </div>
             )}
             {step === 2 && (
-              <>
-                <label htmlFor="tone" className="block text-slate-300 font-medium text-sm">AI Voice Tone</label>
-                <select id="tone" name="tone" className="w-full bg-slate-900 border border-slate-700 text-white rounded-xl p-3 md:p-4 text-sm md:text-base outline-none focus:border-purple-500 transition" value={formData.tone} onChange={handleInputChange}>
-                  <option value="professional">Professional</option>
-                  <option value="friendly">Friendly</option>
-                  <option value="enthusiastic">Enthusiastic</option>
-                </select>
-                <label htmlFor="greeting" className="block text-slate-300 font-medium text-sm">System Greeting</label>
-                <input id="greeting" name="greeting" className="w-full bg-slate-900 border border-slate-700 text-white rounded-xl p-3 md:p-4 text-sm md:text-base outline-none focus:border-purple-500 transition" value={formData.greeting} onChange={handleInputChange} />
-              </>
+              <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-500">
+                <div>
+                  <label htmlFor="tone" className="block text-xs font-semibold text-titanium uppercase tracking-wider mb-2 ml-1">AI Voice Tone</label>
+                  <div className="relative">
+                    <select id="tone" name="tone" className="w-full input-apple appearance-none cursor-pointer" value={formData.tone} onChange={handleInputChange}>
+                      <option value="professional">Professional</option>
+                      <option value="friendly">Friendly</option>
+                      <option value="enthusiastic">Enthusiastic</option>
+                    </select>
+                    <div className="absolute right-4 top-4 pointer-events-none text-zinc-500">
+                      <Settings className="w-4 h-4" />
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <label htmlFor="greeting" className="block text-xs font-semibold text-titanium uppercase tracking-wider mb-2 ml-1">System Greeting</label>
+                  <input id="greeting" name="greeting" className="w-full input-apple" placeholder="Hello, thanks for calling..." value={formData.greeting} onChange={handleInputChange} />
+                </div>
+              </div>
             )}
             {step === 3 && (
-              <>
-                <label htmlFor="workingHours" className="block text-slate-300 font-medium text-sm">Working Hours</label>
-                <input id="workingHours" name="workingHours" className="w-full bg-slate-900 border border-slate-700 text-white rounded-xl p-3 md:p-4 text-sm md:text-base outline-none focus:border-purple-500 transition" value={formData.workingHours} onChange={handleInputChange} />
-                <p className="text-slate-500 mt-4">Review your details before launching.</p>
-              </>
+              <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-500">
+                <div>
+                  <label htmlFor="workingHours" className="block text-xs font-semibold text-titanium uppercase tracking-wider mb-2 ml-1">Working Hours</label>
+                  <input id="workingHours" name="workingHours" className="w-full input-apple" placeholder="9 AM - 5 PM, Mon-Fri" value={formData.workingHours} onChange={handleInputChange} />
+                </div>
+                <div className="p-4 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-200 text-sm">
+                  Ready to launch? Your AI receptionist will be live immediately.
+                </div>
+              </div>
             )}
           </div>
 
-          <div className="flex justify-between mt-10">
-            {step > 1 ? <button onClick={prevStep} className="px-6 py-3 text-slate-400">Back</button> : <div />}
-            {step < 3 ? <button onClick={nextStep} className="px-8 py-3 bg-white text-slate-900 rounded-xl font-bold">Continue</button> :
-              <button onClick={handleSubmit} disabled={isSubmitting} className="px-8 py-3 bg-purple-600 text-white rounded-xl font-bold">Launch</button>}
+          <div className="flex justify-between mt-12">
+            {step > 1 ? <button onClick={prevStep} className="px-6 py-3 text-zinc-400 hover:text-white transition-colors">Back</button> : <div />}
+            {step < 3 ? <button onClick={nextStep} className="btn-apple bg-white text-black px-8 py-3 shadow-lg shadow-white/10 hover:shadow-white/20">Continue</button> :
+              <button onClick={handleSubmit} disabled={isSubmitting} className="btn-apple bg-indigo-500 text-white px-8 py-3 shadow-lg shadow-indigo-500/30 hover:bg-indigo-400">{isSubmitting ? 'Launching...' : 'Launch Business'}</button>}
           </div>
         </Card>
       </div>
@@ -547,29 +583,39 @@ const ChatDemoView: React.FC<ChatDemoViewProps> = ({ config, isDemoMode }) => {
 
   return (
     <div className="flex flex-col h-[calc(100vh-10rem)] md:h-full">
-      <Card className="flex-1 flex flex-col overflow-hidden !bg-black/20 md:border-white/5 backdrop-blur-3xl shadow-2xl">
-        <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 md:space-y-6 scroll-smooth">
+      <Card className="flex-1 flex flex-col overflow-hidden !bg-black/40 md:border-white/10 backdrop-blur-3xl shadow-2xl relative">
+        <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-black/50 to-transparent pointer-events-none z-10" />
+
+        <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 scroll-smooth pb-24">
           {messages.map((msg, i) => (
-            <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-2 duration-300`}>
-              <div className={`p-4 md:p-5 rounded-2xl max-w-[85%] md:max-w-[80%] shadow-md ${msg.role === 'user'
-                ? 'bg-indigo-600 text-white rounded-br-sm'
-                : 'bg-zinc-800/80 border border-zinc-700/50 text-zinc-100 rounded-bl-sm backdrop-blur-sm'
+            <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-4 duration-500`}>
+              <div className={`p-4 md:p-5 rounded-3xl max-w-[85%] md:max-w-[75%] shadow-lg ${msg.role === 'user'
+                ? 'bg-blue-600 text-white rounded-br-sm'
+                : 'bg-zinc-800/80 border border-white/5 text-zinc-100 rounded-bl-sm backdrop-blur-xl'
                 }`}>
-                <p className="text-sm md:text-base leading-relaxed font-sans">{msg.content}</p>
+                <p className="text-base leading-relaxed tracking-wide font-light">{msg.content}</p>
               </div>
             </div>
           ))}
           <div ref={scrollRef} />
         </div>
-        <div className="p-4 bg-zinc-900/40 border-t border-white/5 backdrop-blur-md flex gap-3 items-center">
-          <input
-            className="flex-1 bg-zinc-950/50 border border-zinc-800 text-white p-3.5 rounded-xl text-sm md:text-base outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all duration-300 placeholder-zinc-600 shadow-inner"
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && handleSend()}
-            placeholder="Type a message..."
-          />
-          <button onClick={handleSend} className="p-3.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-500 transition-all duration-300 shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/40 transform hover:-translate-y-0.5 active:translate-y-0"><Send className="w-5 h-5" /></button>
+
+        <div className="absolute bottom-6 left-4 right-4 md:left-8 md:right-8 z-20">
+          <div className="bg-zinc-900/80 backdrop-blur-xl border border-white/10 rounded-full p-2 pl-6 flex items-center shadow-2xl shadow-black/50 ring-1 ring-white/5">
+            <input
+              className="flex-1 bg-transparent text-white text-base outline-none placeholder-zinc-500"
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleSend()}
+              placeholder="Ask anything..."
+            />
+            <button
+              onClick={handleSend}
+              className="p-3 bg-white text-black rounded-full hover:bg-zinc-200 hover:scale-105 active:scale-95 transition-all duration-300 shadow-lg shadow-white/5"
+            >
+              <Send className="w-5 h-5 fill-current" />
+            </button>
+          </div>
         </div>
       </Card>
     </div>
@@ -1266,29 +1312,26 @@ const VoiceDemoView: React.FC<VoiceDemoViewProps> = ({ config, isDemoMode }) => 
   handleSilenceRef.current = handleVADSilence;
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-12rem)] md:h-full items-center justify-center p-4">
-      <div className="mb-6 md:mb-8 text-center max-w-full">
-        <Badge color={status === 'Idle' ? 'blue' : status === 'Listening' ? 'red' : status === 'Speaking' ? 'green' : 'purple'}>
-          {status === 'Speaking' ? 'Natural, human-like voice' : status}
-        </Badge>
-        <h2 className="text-2xl md:text-3xl font-bold text-white mt-4 truncate px-4">{config.business_name}</h2>
-        <p className="text-slate-400 text-sm">Ultra-Low Latency Premium AI Voice</p>
-        {isDemoMode && (
-          <p className="text-[10px] text-slate-500 mt-2">
-            Demo usage: {demoReplyCount}/{DEMO_REPLY_LIMIT} replies
-          </p>
-        )}
+    <div className="flex flex-col min-h-[calc(100vh-12rem)] md:h-full items-center justify-center p-4 relative overflow-hidden">
+      {/* Siri Ambient Glow */}
+      <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full blur-[100px] opacity-20 pointer-events-none transition-colors duration-1000 ${status === 'Listening' ? 'bg-red-500' :
+          status === 'Speaking' ? 'bg-emerald-500' :
+            status === 'Thinking' ? 'bg-amber-500' :
+              'bg-indigo-500'
+        }`}></div>
 
+      <div className="mb-12 text-center max-w-full relative z-10">
+        <div className="inline-flex items-center justify-center mb-6">
+          <Badge color={status === 'Idle' ? 'blue' : status === 'Listening' ? 'red' : status === 'Speaking' ? 'green' : 'amber'}>
+            {status === 'Speaking' ? 'AI Speaking' : status}
+          </Badge>
+        </div>
+        <h2 className="text-4xl md:text-5xl font-semibold text-white mt-2 tracking-tighter px-4 drop-shadow-lg">{config.business_name}</h2>
+        <p className="text-titanium text-lg mt-2 font-light">Intelligent Voice Interface</p>
       </div>
 
-      <div className="relative mb-12 md:mb-16">
-        {status !== 'Idle' && (
-          <>
-            <div className="absolute inset-0 bg-indigo-500/20 rounded-full animate-ping" />
-            <div className="absolute inset-0 bg-indigo-500/10 rounded-full animate-ping" style={{ animationDelay: '0.2s' }} />
-          </>
-        )}
-
+      <div className="relative mb-16 md:mb-20 z-10">
+        {/* Siri Orb */}
         <button
           onClick={() => {
             if (isListening) {
@@ -1301,50 +1344,64 @@ const VoiceDemoView: React.FC<VoiceDemoViewProps> = ({ config, isDemoMode }) => 
               startListening();
             }
           }}
-          className={`relative z-10 w-28 h-28 md:w-36 md:h-36 rounded-full flex items-center justify-center transition-all duration-300 shadow-2xl ${status === 'Listening' ? 'bg-gradient-to-br from-rose-500 to-red-600 shadow-rose-900/30 ring-4 ring-rose-500/20' :
-            status === 'Speaking' ? 'bg-gradient-to-br from-emerald-500 to-green-600 shadow-emerald-900/30 ring-4 ring-emerald-500/20' :
-              status === 'Thinking' ? 'bg-gradient-to-br from-amber-400 to-orange-500 shadow-amber-900/30 ring-4 ring-amber-500/20 animate-pulse' :
-                'bg-gradient-to-br from-zinc-800 to-zinc-900 border border-zinc-700/50 hover:border-indigo-500 hover:shadow-indigo-500/30 active:scale-95 group'
+          className={`relative w-32 h-32 md:w-40 md:h-40 rounded-full flex items-center justify-center transition-all duration-700 outline-none
+            ${status === 'Listening' ? 'shadow-[0_0_60px_rgba(244,63,94,0.6)] scale-110' :
+              status === 'Speaking' ? 'shadow-[0_0_60px_rgba(16,185,129,0.6)] scale-105' :
+                status === 'Thinking' ? 'shadow-[0_0_60px_rgba(245,158,11,0.6)] animate-pulse' :
+                  'shadow-[0_0_40px_rgba(99,102,241,0.3)] hover:scale-105 hover:shadow-[0_0_60px_rgba(99,102,241,0.5)]'
             }`}
         >
-          {status === 'Listening' ? <MicOff className="w-10 h-10 md:w-12 md:h-12 text-white" /> :
-            status === 'Speaking' ? <div className="space-x-1.5 flex h-6 md:h-8 items-center">
-              <div className="w-1.5 h-4 md:h-5 bg-white rounded-full animate-bounce" style={{ animationDelay: '0s' }} />
-              <div className="w-1.5 h-8 md:h-10 bg-white rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
-              <div className="w-1.5 h-4 md:h-5 bg-white rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
-            </div> :
-              status === 'Thinking' ? <Sparkles className="w-10 h-10 md:w-12 md:h-12 text-white animate-spin-slow" /> :
-                <Mic className={`w-10 h-10 md:w-12 md:h-12 text-zinc-400 group-hover:text-indigo-400 transition-colors duration-300`} />
-          }
+          {/* Main Orb Gradient */}
+          <div className={`absolute inset-0 rounded-full bg-gradient-to-br transition-all duration-700 ${status === 'Listening' ? 'from-rose-500 to-red-600 animate-pulse' :
+              status === 'Speaking' ? 'from-emerald-400 to-green-600 animate-orb' :
+                status === 'Thinking' ? 'from-amber-300 to-orange-500 animate-spin-slow' :
+                  'from-indigo-500 to-blue-600 animate-orb'
+            }`}></div>
+
+          {/* Inner Gloss */}
+          <div className="absolute inset-[2px] rounded-full bg-gradient-to-t from-black/20 to-white/40 opacity-50"></div>
+
+          {/* Icon */}
+          <div className="relative z-10 transition-transform duration-300">
+            {status === 'Listening' ? <Mic className="w-12 h-12 text-white drop-shadow-md" /> :
+              status === 'Speaking' ? <div className="flex gap-1 h-8 items-center">
+                <div className="w-1.5 h-full bg-white rounded-full animate-[bounce_1s_infinite_0ms]" />
+                <div className="w-1.5 h-full bg-white rounded-full animate-[bounce_1s_infinite_200ms]" />
+                <div className="w-1.5 h-full bg-white rounded-full animate-[bounce_1s_infinite_400ms]" />
+              </div> :
+                status === 'Thinking' ? <Sparkles className="w-12 h-12 text-white animate-pulse" /> :
+                  <Mic className="w-12 h-12 text-white/90" />
+            }
+          </div>
         </button>
       </div>
 
-      <div className="w-full max-w-2xl space-y-4 md:space-y-6">
+      <div className="w-full max-w-2xl space-y-6 relative z-10 px-4">
         {transcript && (
-          <div className="glass-panel p-4 md:p-6 rounded-2xl animate-in slide-in-from-bottom-2 duration-500 shadow-lg border-l-4 border-l-indigo-500">
-            <p className="text-[10px] text-indigo-400 uppercase tracking-widest mb-2 font-bold flex items-center gap-2">
-              <span className="w-1 h-1 rounded-full bg-indigo-400"></span> You
+          <div className="glass-panel-pro p-6 rounded-[24px] animate-in fade-in slide-in-from-bottom-4 duration-500 text-right ml-auto max-w-[90%]">
+            <p className="text-[10px] text-zinc-400 uppercase tracking-widest mb-2 font-bold flex items-center justify-end gap-2">
+              You <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
             </p>
-            <p className="text-lg md:text-xl text-zinc-100 font-medium leading-relaxed font-sans">{transcript}</p>
+            <p className="text-xl md:text-2xl text-white font-medium leading-relaxed tracking-tight">{transcript}</p>
           </div>
         )}
         {aiResponse && (
-          <div className="glass-panel p-4 md:p-6 rounded-2xl animate-in slide-in-from-bottom-2 duration-500 delay-100 shadow-lg border-l-4 border-l-purple-500">
-            <p className="text-[10px] text-purple-400 uppercase tracking-widest mb-2 font-bold flex items-center gap-2">
-              <span className="w-1 h-1 rounded-full bg-purple-400"></span> AI Assistant
+          <div className="glass-panel-pro p-6 rounded-[24px] animate-in fade-in slide-in-from-bottom-4 duration-500 delay-100 bg-white/5 mr-auto max-w-[90%]">
+            <p className="text-[10px] text-zinc-400 uppercase tracking-widest mb-2 font-bold flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> AI Assistant
             </p>
-            <p className="text-lg md:text-xl text-white font-medium leading-relaxed font-sans">{aiResponse}</p>
+            <p className="text-xl md:text-2xl text-white font-medium leading-relaxed tracking-tight text-glow">{aiResponse}</p>
           </div>
         )}
       </div>
 
       {/* Debug Console */}
-      <div className="fixed bottom-4 right-4 max-w-xs w-full pointer-events-none z-50">
-        <div className="bg-black/80 p-2 rounded-lg text-[10px] font-mono text-green-400 pointer-events-auto backdrop-blur border border-green-500/30">
-          <p className="font-bold text-slate-400 mb-1 border-b border-slate-700 pb-1">Debug Log</p>
-          {debugInfo.length === 0 ? <p className="text-slate-600">No logs...</p> :
+      <div className="fixed bottom-4 right-4 max-w-xs w-full pointer-events-none z-50 opacity-50 hover:opacity-100 transition-opacity">
+        <div className="bg-black/60 p-3 rounded-xl text-[10px] font-mono text-emerald-400 pointer-events-auto backdrop-blur-md border border-white/5">
+          <p className="font-bold text-zinc-500 mb-2 border-b border-white/5 pb-1">SYSTEM STATUS</p>
+          {debugInfo.length === 0 ? <p className="text-zinc-600 italic">Ready...</p> :
             debugInfo.map((msg, i) => (
-              <p key={i} className="truncate">{msg}</p>
+              <p key={i} className="truncate mb-0.5">{msg}</p>
             ))
           }
         </div>
@@ -1384,15 +1441,15 @@ const DashboardView: React.FC<DashboardViewProps> = ({ config, onNavigate, isDem
         </div>
       )}
 
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-white">Welcome, {config.business_name}</h1>
-          <p className="text-slate-400 mt-1">Manage your AI Receptionist</p>
+          <h1 className="text-4xl font-semibold text-white tracking-tight">Welcome, {config.business_name}</h1>
+          <p className="text-titanium mt-2 text-lg font-light">Your AI receptionist is active and ready.</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           {currentPlan !== 'free' && (
-            <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-green-500/10 border border-green-500/20 rounded-lg text-green-400 text-xs font-bold animate-pulse">
-              <CheckCircle2 className="w-3 h-3" />
+            <div className="hidden md:flex items-center gap-2 px-4 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-emerald-400 text-xs font-bold tracking-wide animate-pulse">
+              <CheckCircle2 className="w-3.5 h-3.5" />
               PLAN ACTIVATED
             </div>
           )}
@@ -1401,44 +1458,44 @@ const DashboardView: React.FC<DashboardViewProps> = ({ config, onNavigate, isDem
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="p-6 hover:bg-slate-800/50 transition cursor-pointer group" onClick={() => onNavigate('chat-demo')}>
-          <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition">
-            <MessageSquare className="w-6 h-6 text-blue-400" />
+        <Card className="p-6 group hover:border-blue-500/30" onClick={() => onNavigate('chat-demo')}>
+          <div className="w-14 h-14 bg-gradient-to-br from-blue-500/20 to-indigo-500/20 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition duration-500">
+            <MessageSquare className="w-7 h-7 text-blue-400" />
           </div>
-          <h3 className="text-lg font-semibold text-white mb-2">Chat Demo</h3>
-          <p className="text-slate-400 text-sm">Test your AI assistant in a text chat interface.</p>
+          <h3 className="text-xl font-semibold text-white mb-2 tracking-tight">Chat Demo</h3>
+          <p className="text-titanium text-sm leading-relaxed">Test your AI assistant in a text chat interface.</p>
         </Card>
 
-        <Card className="p-6 hover:bg-slate-800/50 transition cursor-pointer group" onClick={() => onNavigate('phone-demo')}>
-          <div className="w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition">
-            <Phone className="w-6 h-6 text-green-400" />
+        <Card className="p-6 group hover:border-emerald-500/30" onClick={() => onNavigate('phone-demo')}>
+          <div className="w-14 h-14 bg-gradient-to-br from-emerald-500/20 to-teal-500/20 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition duration-500">
+            <Phone className="w-7 h-7 text-emerald-400" />
           </div>
-          <h3 className="text-lg font-semibold text-white mb-2">Voice Demo</h3>
-          <p className="text-slate-400 text-sm">Experience the ultra-low latency voice interface.</p>
+          <h3 className="text-xl font-semibold text-white mb-2 tracking-tight">Voice Demo</h3>
+          <p className="text-titanium text-sm leading-relaxed">Experience the ultra-low latency voice interface.</p>
         </Card>
 
-        <Card className={`p-6 transition cursor-pointer group ${isDemoMode ? 'opacity-50 cursor-not-allowed' : 'hover:bg-slate-800/50'}`}
+        <Card className={`p-6 group hover:border-purple-500/30 ${isDemoMode ? 'opacity-50 cursor-not-allowed' : ''}`}
           onClick={() => !isDemoMode && onNavigate('settings')}>
           <div className="flex justify-between items-start">
-            <div className="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition">
-              <Settings className="w-6 h-6 text-purple-400" />
+            <div className="w-14 h-14 bg-gradient-to-br from-purple-500/20 to-violet-500/20 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition duration-500">
+              <Settings className="w-7 h-7 text-purple-400" />
             </div>
-            {isDemoMode && <Lock className="w-4 h-4 text-slate-500" />}
+            {isDemoMode && <Lock className="w-5 h-5 text-zinc-600" />}
           </div>
-          <h3 className="text-lg font-semibold text-white mb-2">Business Settings</h3>
-          <p className="text-slate-400 text-sm">Configure your hours, tone, and services.</p>
+          <h3 className="text-xl font-semibold text-white mb-2 tracking-tight">Settings</h3>
+          <p className="text-titanium text-sm leading-relaxed">Configure your hours, tone, and services.</p>
         </Card>
 
-        <Card className={`p-6 transition cursor-pointer group ${isDemoMode ? 'opacity-50 cursor-not-allowed' : 'hover:bg-slate-800/50'}`}
+        <Card className={`p-6 group hover:border-pink-500/30 ${isDemoMode ? 'opacity-50 cursor-not-allowed' : ''}`}
           onClick={() => !isDemoMode && alert("Connect Twilio to go live!")}>
           <div className="flex justify-between items-start">
-            <div className="w-12 h-12 bg-pink-500/20 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition">
-              <PhoneOutgoing className="w-6 h-6 text-pink-400" />
+            <div className="w-14 h-14 bg-gradient-to-br from-pink-500/20 to-rose-500/20 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition duration-500">
+              <PhoneOutgoing className="w-7 h-7 text-pink-400" />
             </div>
-            {isDemoMode && <Lock className="w-4 h-4 text-slate-500" />}
+            {isDemoMode && <Lock className="w-5 h-5 text-zinc-600" />}
           </div>
-          <h3 className="text-lg font-semibold text-white mb-2">Connect Twilio</h3>
-          <p className="text-slate-400 text-sm">Link your phone number to start receiving calls.</p>
+          <h3 className="text-xl font-semibold text-white mb-2 tracking-tight">Connect Twilio</h3>
+          <p className="text-titanium text-sm leading-relaxed">Link your phone number to start receiving calls.</p>
         </Card>
       </div>
 
