@@ -214,7 +214,7 @@ app.post('/api/setup', async (req, res) => {
 
     console.log('[Setup] Success! Business ID:', resultData.id);
 
-    res.json({ success: true, id: data.id });
+    res.json({ success: true, id: resultData.id });
 });
 
 // Chat Endpoint
