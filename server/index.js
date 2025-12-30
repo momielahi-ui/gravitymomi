@@ -158,25 +158,61 @@ app.post('/api/setup', async (req, res) => {
     const { name, services, tone, workingHours, greeting } = req.body;
     const supabase = getSupabaseClient(req.headers.authorization.split(' ')[1]);
 
-    const { data, error } = await supabase
+    // Manual Upsert Logic to avoid onConflict constraint issues
+    console.log(`[Setup] Checking if business exists for user ${user.id}...`);
+
+    // 1. Check existence
+    const { data: existing, error: fetchError } = await supabase
         .from('businesses')
-        .upsert({
-            user_id: user.id,
-            business_name: name,
-            services,
-            tone,
-            working_hours: workingHours || '9 AM - 5 PM',
-            greeting
-        }, {
-            onConflict: 'user_id'  // Specify which column is the unique constraint
-        })
-        .select()
+        .select('id')
+        .eq('user_id', user.id)
         .single();
 
-    if (error) {
-        console.error('Supabase Error:', error);
-        return res.status(500).json({ error: error.message });
+    if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 is "Row not found"
+        console.error('[Setup] Existence Check Error:', fetchError);
+        return res.status(500).json({ error: 'Database verification failed' });
     }
+
+    let resultData;
+    let resultError;
+
+    const payload = {
+        user_id: user.id,
+        business_name: name,
+        services,
+        tone,
+        working_hours: workingHours || '9 AM - 5 PM',
+        greeting
+    };
+
+    if (existing) {
+        console.log(`[Setup] Updating existing business ${existing.id}`);
+        const { data, error } = await supabase
+            .from('businesses')
+            .update(payload)
+            .eq('id', existing.id)
+            .select()
+            .single();
+        resultData = data;
+        resultError = error;
+    } else {
+        console.log(`[Setup] Creating new business for user ${user.id}`);
+        const { data, error } = await supabase
+            .from('businesses')
+            .insert(payload)
+            .select()
+            .single();
+        resultData = data;
+        resultError = error;
+    }
+
+    if (resultError) {
+        console.error('[Setup] Save Error:', resultError);
+        console.error('[Setup] Payload was:', JSON.stringify(payload));
+        return res.status(500).json({ error: resultError.message });
+    }
+
+    console.log('[Setup] Success! Business ID:', resultData.id);
 
     res.json({ success: true, id: data.id });
 });
