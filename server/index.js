@@ -378,17 +378,16 @@ app.post('/api/chat', async (req, res) => {
             }
         }
 
-        // Authenticated mode: Stream response
-        console.log('[Chat] Authenticated mode: streaming response');
-        res.setHeader('Content-Type', 'text/plain');
-        res.setHeader('Transfer-Encoding', 'chunked');
+        // Authenticated mode: Return JSON to match frontend expectation
+        console.log('[Chat] Authenticated mode: collecting full response');
 
+        let fullResponse = '';
         for await (const chunk of result.stream) {
-            const chunkText = chunk.text();
-            res.write(chunkText);
+            fullResponse += chunk.text();
         }
 
-        res.end();
+        console.log('[Chat] Response collected, sending JSON');
+        res.json({ response: fullResponse });
 
     } catch (error) {
         console.error('Gemini/Server API Error:', error);
