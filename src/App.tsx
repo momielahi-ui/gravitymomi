@@ -487,8 +487,22 @@ const ChatDemoView: React.FC<ChatDemoViewProps> = ({ config, isDemoMode }) => {
 
   useEffect(() => scrollRef.current?.scrollIntoView({ behavior: 'smooth' }), [messages]);
 
+  const isConfigValid = (cfg: BusinessConfig) => {
+    return cfg && (cfg.name || cfg.business_name || cfg.services);
+  };
+
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
+
+    if (!isConfigValid(config)) {
+      setMessages(prev => [...prev, { role: 'user', content: input }]);
+      setInput('');
+      setTimeout(() => {
+        setMessages(prev => [...prev, { role: 'assistant', content: '⚠️ Error: Business configuration missing. Please go to Settings and save your business details first.' }]);
+      }, 500);
+      return;
+    }
+
     const userMsg: ChatMessage = { role: 'user', content: input };
     setMessages(prev => [...prev, userMsg]);
     setInput('');
@@ -510,10 +524,17 @@ const ChatDemoView: React.FC<ChatDemoViewProps> = ({ config, isDemoMode }) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(bodyPayload)
       });
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || `Server error: ${res.status}`);
+      }
+
       const data = await res.json();
       setMessages(prev => [...prev, { role: 'assistant', content: data.response }]);
-    } catch {
-      setMessages(prev => [...prev, { role: 'assistant', content: 'Connection failed.' }]);
+    } catch (err: any) {
+      console.error("Chat Error:", err);
+      setMessages(prev => [...prev, { role: 'assistant', content: `Connection failed: ${err.message || 'Unknown error'}` }]);
     } finally {
       setIsLoading(false);
     }
@@ -963,6 +984,15 @@ const VoiceDemoView: React.FC<VoiceDemoViewProps> = ({ config, isDemoMode }) => 
 
   const processVoiceInput = async (text: string) => {
     if (!text.trim() || isProcessingRef.current) return;
+
+    // Validation: Check for config
+    if (!config || (!config.name && !config.business_name && !config.services)) {
+      setStatus('Idle');
+      const errMsg = "Error: Business configuration missing. Please save settings.";
+      setAiResponse(errMsg);
+      speak(errMsg);
+      return;
+    }
 
     isProcessingRef.current = true;
     setStatus('Thinking');
