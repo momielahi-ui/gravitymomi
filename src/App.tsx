@@ -499,7 +499,7 @@ const ChatDemoView: React.FC<ChatDemoViewProps> = ({ config, isDemoMode }) => {
       const bodyPayload = {
         message: userMsg.content,
         history: messages.map(m => ({ role: m.role, content: m.content })),
-        config: isDemoMode ? (config || {}) : undefined
+        config: config || {}
       };
 
       // Use direct fetch for demo mode
@@ -974,7 +974,7 @@ const VoiceDemoView: React.FC<VoiceDemoViewProps> = ({ config, isDemoMode }) => 
       const bodyPayload = {
         message: text,
         history: [],
-        config: isDemoMode ? (config || {}) : undefined
+        config: config || {}
       };
 
       console.log("[VoiceDemo] Sending payload:", bodyPayload);
