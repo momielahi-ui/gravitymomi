@@ -4,7 +4,8 @@ import dotenv from 'dotenv';
 import { createClient } from '@supabase/supabase-js';
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import nodemailer from 'nodemailer'; // Added email support
+import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
 dotenv.config();
 
@@ -21,7 +22,186 @@ app.get('/', (req, res) => {
     res.send('Smart Reception Backend is running!');
 });
 
-// ... (skipping unchanged parts)
+// Supabase Setup
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_ANON_KEY; // Using Anon Key for client operations
+
+// Helper to get user from token
+const getUser = async (req) => {
+    console.log('[Auth] getUser called');
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+        console.log('[Auth] No Authorization header found');
+        return null;
+    }
+
+    // Robust extraction: Handle "Bearer <token>" or just "<token>"
+    let token = authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : authHeader;
+
+    // Sanitize: Whitelist only valid JWT characters
+    if (token) {
+        token = token.trim().replace(/[^a-zA-Z0-9\.\-\_]/g, '');
+    }
+
+    if (!token) {
+        console.log('[Auth] Token is empty after extraction/sanitization');
+        return null;
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    const { data: { user }, error } = await supabase.auth.getUser(token);
+
+    if (error) {
+        console.error('[Auth] supabase.auth.getUser failed:', error.message);
+    } else {
+        console.log('[Auth] User verified:', user?.id);
+    }
+
+    if (error || !user) return null;
+    return user;
+};
+
+// Create a client with the user's token to respect RLS
+const getSupabaseClient = (token) => {
+    return createClient(supabaseUrl, supabaseKey, {
+        global: { headers: { Authorization: `Bearer ${token}` } }
+    });
+};
+
+// Gemini Setup
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || 'dummy-key');
+const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
+
+// Email Setup (Resend HTTP API)
+const emailPass = process.env.EMAIL_PASSWORD || '';
+const isResendKey = emailPass.startsWith('re_');
+
+let resendClient = null;
+let nodemailerTransport = null;
+
+if (isResendKey) {
+    resendClient = new Resend(emailPass);
+    console.log('[Email] Using Resend HTTP API');
+} else {
+    console.log('[Email] Using SMTP (Nodemailer)');
+    nodemailerTransport = nodemailer.createTransport({
+        host: process.env.SMTP_HOST || 'smtp.gmail.com',
+        port: parseInt(process.env.SMTP_PORT || '587'),
+        secure: process.env.SMTP_SECURE === 'true' || false,
+        auth: {
+            user: process.env.SMTP_USER || process.env.SENDER_EMAIL || process.env.PAYONEER_EMAIL,
+            pass: emailPass
+        }
+    });
+}
+
+// ElevenLabs Setup
+const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
+const ELEVENLABS_VOICE_ID = process.env.ELEVENLABS_VOICE_ID || 'pqHfZKP75CvOlQylNhV4';
+
+// Helper to estimate minutes from characters
+const charsToMinutes = (chars) => Math.ceil(chars / 1000);
+
+// Helper to determine sender address
+const getSender = () => {
+    if (process.env.SENDER_EMAIL) return process.env.SENDER_EMAIL;
+    if (isResendKey) return 'onboarding@resend.dev';
+    return process.env.PAYONEER_EMAIL;
+};
+
+// Health check
+app.get('/api/health', (req, res) => {
+    res.json({
+        status: 'ok',
+        model: 'gemini-flash-latest',
+        deployment: '2025-12-31-restored-routes'
+    });
+});
+
+// Check setup status
+app.get('/api/status', async (req, res) => {
+    const user = await getUser(req);
+    if (!user) return res.status(401).json({ error: 'Unauthorized' });
+
+    const supabase = getSupabaseClient(req.headers.authorization.split(' ')[1]);
+    const { data, error } = await supabase
+        .from('businesses')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+    if (data) {
+        res.json({ setupCompleted: true, config: data });
+    } else {
+        res.json({ setupCompleted: false });
+    }
+});
+
+// Save Onboarding Data
+app.post('/api/setup', async (req, res) => {
+    const user = await getUser(req);
+    if (!user) return res.status(401).json({ error: 'Unauthorized' });
+
+    const { name, services, tone, workingHours, greeting } = req.body;
+    const supabase = getSupabaseClient(req.headers.authorization.split(' ')[1]);
+
+    console.log(`[Setup] Checking if business exists for user ${user.id}...`);
+
+    // 1. Check existence
+    const { data: existing, error: fetchError } = await supabase
+        .from('businesses')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+    if (fetchError && fetchError.code !== 'PGRST116') {
+        console.error('[Setup] Existence Check Error:', fetchError);
+        return res.status(500).json({ error: 'Database verification failed' });
+    }
+
+    let resultData;
+    let resultError;
+
+    const payload = {
+        user_id: user.id,
+        business_name: name,
+        services,
+        tone,
+        working_hours: workingHours || '9 AM - 5 PM',
+        greeting
+    };
+
+    if (existing) {
+        console.log(`[Setup] Updating existing business ${existing.id}`);
+        const { data, error } = await supabase
+            .from('businesses')
+            .update(payload)
+            .eq('id', existing.id)
+            .select()
+            .single();
+        resultData = data;
+        resultError = error;
+    } else {
+        console.log(`[Setup] Creating new business for user ${user.id}`);
+        const { data, error } = await supabase
+            .from('businesses')
+            .insert(payload)
+            .select()
+            .single();
+        resultData = data;
+        resultError = error;
+    }
+
+    if (resultError) {
+        console.error('[Setup] Save Error:', resultError);
+        console.error('[Setup] Payload was:', JSON.stringify(payload));
+        return res.status(500).json({ error: resultError.message });
+    }
+
+    console.log('[Setup] Success! Business ID:', resultData.id);
+
+    res.json({ success: true, id: resultData.id });
+});
 
 // Chat Endpoint
 app.post('/api/chat', async (req, res) => {
