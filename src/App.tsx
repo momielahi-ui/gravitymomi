@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import {
-  Phone, MessageSquare, Mic, Settings, Send, MicOff,
+  Phone, MessageSquare, Mic, Settings, Send,
   CheckCircle2, LayoutDashboard, LogOut, Globe, Sparkles, Lock, Mail, Menu, X, Clock,
   PhoneOutgoing, CreditCard
 } from 'lucide-react';
@@ -1315,9 +1315,9 @@ const VoiceDemoView: React.FC<VoiceDemoViewProps> = ({ config, isDemoMode }) => 
     <div className="flex flex-col min-h-[calc(100vh-12rem)] md:h-full items-center justify-center p-4 relative overflow-hidden">
       {/* Siri Ambient Glow */}
       <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full blur-[100px] opacity-20 pointer-events-none transition-colors duration-1000 ${status === 'Listening' ? 'bg-red-500' :
-          status === 'Speaking' ? 'bg-emerald-500' :
-            status === 'Thinking' ? 'bg-amber-500' :
-              'bg-indigo-500'
+        status === 'Speaking' ? 'bg-emerald-500' :
+          status === 'Thinking' ? 'bg-amber-500' :
+            'bg-indigo-500'
         }`}></div>
 
       <div className="mb-12 text-center max-w-full relative z-10">
@@ -1353,9 +1353,9 @@ const VoiceDemoView: React.FC<VoiceDemoViewProps> = ({ config, isDemoMode }) => 
         >
           {/* Main Orb Gradient */}
           <div className={`absolute inset-0 rounded-full bg-gradient-to-br transition-all duration-700 ${status === 'Listening' ? 'from-rose-500 to-red-600 animate-pulse' :
-              status === 'Speaking' ? 'from-emerald-400 to-green-600 animate-orb' :
-                status === 'Thinking' ? 'from-amber-300 to-orange-500 animate-spin-slow' :
-                  'from-indigo-500 to-blue-600 animate-orb'
+            status === 'Speaking' ? 'from-emerald-400 to-green-600 animate-orb' :
+              status === 'Thinking' ? 'from-amber-300 to-orange-500 animate-spin-slow' :
+                'from-indigo-500 to-blue-600 animate-orb'
             }`}></div>
 
           {/* Inner Gloss */}
