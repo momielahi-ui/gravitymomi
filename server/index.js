@@ -36,13 +36,10 @@ const getUser = async (req) => {
     // Robust extraction: Handle "Bearer <token>" or just "<token>"
     let token = authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : authHeader;
 
-    // Sanitize: 
-    // 1. Trim whitespace
-    token = token?.trim();
-
-    // 2. Aggressively remove ANY quotes (valid JWTs never have quotes)
+    // Sanitize: Whitelist only valid JWT characters (Alphanumeric, dot, dash, underscore)
+    // This removes ALL invalid characters (quotes, spaces, hidden control chars)
     if (token) {
-        token = token.replace(/['"]+/g, '');
+        token = token.trim().replace(/[^a-zA-Z0-9\.\-\_]/g, '');
     }
 
     if (!token) {
