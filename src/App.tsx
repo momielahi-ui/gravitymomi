@@ -19,7 +19,7 @@ interface CardProps {
 
 const Card: React.FC<CardProps> = ({ children, className = '', onClick }) => (
   <div
-    className={`bg-slate-800 border border-slate-700/50 rounded-2xl shadow-sm ${className} ${onClick ? 'cursor-pointer' : ''}`}
+    className={`glass-panel rounded-xl shadow-lg transition-all duration-300 ${className} ${onClick ? 'cursor-pointer hover:scale-[1.01] hover:shadow-xl glass-panel-hover' : ''}`}
     onClick={onClick}
   >
     {children}
@@ -35,11 +35,11 @@ interface BadgeProps {
 
 const Badge: React.FC<BadgeProps> = ({ children, color = 'blue' }) => {
   const colors: Record<BadgeColor, string> = {
-    blue: 'bg-blue-500/10 text-blue-400',
-    purple: 'bg-purple-500/10 text-purple-400',
-    green: 'bg-green-500/10 text-green-400',
-    amber: 'bg-amber-500/10 text-amber-400',
-    red: 'bg-red-500/10 text-red-400'
+    blue: 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20',
+    purple: 'bg-violet-500/10 text-violet-400 border border-violet-500/20',
+    green: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20',
+    amber: 'bg-amber-500/10 text-amber-400 border border-amber-500/20',
+    red: 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
   };
   return (
     <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${colors[color] || colors.blue}`}>
@@ -93,8 +93,8 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess, onTryDemo }) => {
     <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-10">
-          <div className="w-12 h-12 bg-purple-600 rounded-xl flex items-center justify-center mx-auto mb-4">
-            <Sparkles className="w-6 h-6 text-white" />
+          <div className="w-16 h-16 bg-gradient-to-tr from-indigo-500 to-violet-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-indigo-500/20">
+            <Sparkles className="w-8 h-8 text-white relative z-10" />
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">SmartReception.ai</h1>
           <p className="text-slate-400">Sign in to manage your AI workforce.</p>
@@ -109,7 +109,7 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess, onTryDemo }) => {
                   type="email"
                   required
                   autoComplete="off"
-                  className="w-full bg-slate-900 border border-slate-700 text-white rounded-xl pl-10 pr-4 py-3 focus:ring-2 focus:ring-purple-600 outline-none transition"
+                  className="w-full bg-zinc-900/50 border border-zinc-800 text-white rounded-xl pl-10 pr-4 py-3.5 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all duration-300 placeholder-zinc-500"
                   placeholder="you@company.com"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
@@ -124,7 +124,7 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess, onTryDemo }) => {
                 <input
                   type="password"
                   required
-                  className="w-full bg-slate-900 border border-slate-700 text-white rounded-xl pl-10 pr-4 py-3 focus:ring-2 focus:ring-purple-600 outline-none transition"
+                  className="w-full bg-zinc-900/50 border border-zinc-800 text-white rounded-xl pl-10 pr-4 py-3.5 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all duration-300 placeholder-zinc-500"
                   placeholder="••••••••"
                   value={password}
                   onChange={e => setPassword(e.target.value)}
@@ -142,7 +142,7 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess, onTryDemo }) => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-purple-600 hover:bg-purple-500 text-white py-3 rounded-xl font-semibold transition disabled:opacity-50 flex items-center justify-center"
+              className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-3.5 rounded-xl font-semibold transition-all duration-300 disabled:opacity-50 flex items-center justify-center shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 transform hover:-translate-y-0.5"
             >
               {loading ? 'Processing...' : (isSignUp ? 'Create Account' : 'Sign In')}
             </button>
@@ -155,9 +155,9 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess, onTryDemo }) => {
             <button
               type="button"
               onClick={onTryDemo}
-              className="w-full bg-slate-700 hover:bg-slate-600 text-white py-3 rounded-xl font-semibold transition flex items-center justify-center gap-2 group"
+              className="w-full bg-zinc-800 hover:bg-zinc-700 text-white py-3.5 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center gap-2 group border border-zinc-700 hover:border-zinc-600"
             >
-              <Sparkles className="w-4 h-4 text-purple-400 group-hover:text-purple-300" />
+              <Sparkles className="w-4 h-4 text-indigo-400 group-hover:text-indigo-300" />
               Try Demo Free
             </button>
 
@@ -259,8 +259,8 @@ const UsageCard: React.FC<{ used: number; limit: number }> = ({ used, limit }) =
   return (
     <Card className="p-6">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="font-bold text-white flex items-center gap-2">
-          <Clock className="w-5 h-5 text-slate-400" />
+        <h3 className="font-bold text-white flex items-center gap-2 text-lg">
+          <Clock className="w-5 h-5 text-indigo-400" />
           Plan Usage
         </h3>
         <Badge color={isCritical ? 'red' : isWarning ? 'amber' : 'green'}>
@@ -273,9 +273,9 @@ const UsageCard: React.FC<{ used: number; limit: number }> = ({ used, limit }) =
         <span className="text-white font-medium">{used} / {limit} min</span>
       </div>
 
-      <div className="w-full bg-slate-700/50 rounded-full h-2.5 overflow-hidden">
+      <div className="w-full bg-zinc-800 rounded-full h-2 overflow-hidden">
         <div
-          className={`h-2.5 rounded-full transition-all duration-500 ${isCritical ? 'bg-red-500' : isWarning ? 'bg-amber-500' : 'bg-green-500'}`}
+          className={`h-full rounded-full transition-all duration-500 shadow-lg ${isCritical ? 'bg-red-500' : isWarning ? 'bg-amber-500' : 'bg-emerald-500'}`}
           style={{ width: `${percentage}%` }}
         />
       </div>
@@ -297,9 +297,9 @@ const PricingCard: React.FC<{
   features: string[];
   onClick?: () => void;
 }> = ({ plan, price, mins, current, features, onClick }) => (
-  <Card className={`p-6 relative overflow-hidden ${current ? 'border-purple-500 ring-1 ring-purple-500' : 'opacity-80 hover:opacity-100 transition'}`}>
+  <Card className={`p-6 relative overflow-hidden flex flex-col group ${current ? 'ring-1 ring-indigo-500/50 bg-indigo-500/5' : 'opacity-70 hover:opacity-100 hover:bg-zinc-800/50'}`}>
     {current && (
-      <div className="absolute top-0 right-0 bg-purple-600 text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl">
+      <div className="absolute top-0 right-0 bg-indigo-600 text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl shadow-lg shadow-indigo-500/20">
         CURRENT PLAN
       </div>
     )}
@@ -311,13 +311,13 @@ const PricingCard: React.FC<{
     </div>
 
     <div className="space-y-3 mb-6">
-      <div className="flex items-center gap-2 text-sm text-slate-300">
-        <Clock className="w-4 h-4 text-purple-400" />
+      <div className="flex items-center gap-2 text-sm text-zinc-400">
+        <Clock className="w-4 h-4 text-indigo-400" />
         <span>{mins} mins/month</span>
       </div>
       {features.map((f, i) => (
-        <div key={i} className="flex items-center gap-2 text-sm text-slate-300">
-          <CheckCircle2 className="w-4 h-4 text-green-400" />
+        <div key={i} className="flex items-center gap-2 text-sm text-zinc-400">
+          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
           <span>{f}</span>
         </div>
       ))}
@@ -325,9 +325,9 @@ const PricingCard: React.FC<{
 
     <button
       disabled={current}
-      className={`w-full py-2 rounded-lg text-sm font-semibold transition ${current
-        ? 'bg-slate-700 text-slate-400 cursor-default'
-        : 'bg-white text-slate-900 hover:bg-slate-200'
+      className={`w-full py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 ${current
+        ? 'bg-zinc-800 text-zinc-500 cursor-default border border-zinc-700'
+        : 'bg-white text-zinc-950 hover:bg-zinc-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5'
         }`}
       onClick={onClick || (() => alert("Billing integration coming soon!"))}
     >
@@ -547,26 +547,29 @@ const ChatDemoView: React.FC<ChatDemoViewProps> = ({ config, isDemoMode }) => {
 
   return (
     <div className="flex flex-col h-[calc(100vh-10rem)] md:h-full">
-      <Card className="flex-1 flex flex-col overflow-hidden bg-slate-900 border-slate-800">
-        <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 md:space-y-6">
+      <Card className="flex-1 flex flex-col overflow-hidden !bg-black/20 md:border-white/5 backdrop-blur-3xl shadow-2xl">
+        <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 md:space-y-6 scroll-smooth">
           {messages.map((msg, i) => (
-            <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-              <div className={`p-3 md:p-4 rounded-2xl max-w-[85%] md:max-w-[80%] ${msg.role === 'user' ? 'bg-purple-600' : 'bg-slate-700'}`}>
-                <p className="text-sm md:text-base text-white leading-relaxed">{msg.content}</p>
+            <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-2 duration-300`}>
+              <div className={`p-4 md:p-5 rounded-2xl max-w-[85%] md:max-w-[80%] shadow-md ${msg.role === 'user'
+                ? 'bg-indigo-600 text-white rounded-br-sm'
+                : 'bg-zinc-800/80 border border-zinc-700/50 text-zinc-100 rounded-bl-sm backdrop-blur-sm'
+                }`}>
+                <p className="text-sm md:text-base leading-relaxed font-sans">{msg.content}</p>
               </div>
             </div>
           ))}
           <div ref={scrollRef} />
         </div>
-        <div className="p-3 md:p-4 bg-slate-800 border-t border-slate-700 flex gap-2">
+        <div className="p-4 bg-zinc-900/40 border-t border-white/5 backdrop-blur-md flex gap-3 items-center">
           <input
-            className="flex-1 bg-slate-900 text-white p-3 rounded-lg text-sm md:text-base outline-none focus:border-purple-500 transition"
+            className="flex-1 bg-zinc-950/50 border border-zinc-800 text-white p-3.5 rounded-xl text-sm md:text-base outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all duration-300 placeholder-zinc-600 shadow-inner"
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleSend()}
             placeholder="Type a message..."
           />
-          <button onClick={handleSend} className="p-3 bg-purple-600 text-white rounded-lg hover:bg-purple-500 transition"><Send className="w-4 h-4" /></button>
+          <button onClick={handleSend} className="p-3.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-500 transition-all duration-300 shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/40 transform hover:-translate-y-0.5 active:translate-y-0"><Send className="w-5 h-5" /></button>
         </div>
       </Card>
     </div>
@@ -1278,18 +1281,17 @@ const VoiceDemoView: React.FC<VoiceDemoViewProps> = ({ config, isDemoMode }) => 
 
       </div>
 
-      <div className="relative mb-8 md:mb-12">
+      <div className="relative mb-12 md:mb-16">
         {status !== 'Idle' && (
           <>
-            <div className="absolute inset-0 bg-purple-500/20 rounded-full animate-ping" />
-            <div className="absolute inset-0 bg-purple-500/10 rounded-full animate-ping" style={{ animationDelay: '0.2s' }} />
+            <div className="absolute inset-0 bg-indigo-500/20 rounded-full animate-ping" />
+            <div className="absolute inset-0 bg-indigo-500/10 rounded-full animate-ping" style={{ animationDelay: '0.2s' }} />
           </>
         )}
 
         <button
           onClick={() => {
             if (isListening) {
-              // Manual Stop = Treat as silence detection (Process it!)
               console.log("Manual stop -> triggering silence handler");
               handleVADSilence();
               vad.stopMonitoring();
@@ -1299,35 +1301,39 @@ const VoiceDemoView: React.FC<VoiceDemoViewProps> = ({ config, isDemoMode }) => 
               startListening();
             }
           }}
-          className={`relative z-10 w-24 h-24 md:w-32 md:h-32 rounded-full flex items-center justify-center transition-all duration-300 shadow-xl ${status === 'Listening' ? 'bg-red-500 shadow-red-900/20' :
-            status === 'Speaking' ? 'bg-green-500 shadow-green-900/20' :
-              status === 'Thinking' ? 'bg-amber-400 shadow-amber-900/20 animate-pulse' :
-                'bg-slate-800 border-2 border-slate-700 hover:border-purple-500'
+          className={`relative z-10 w-28 h-28 md:w-36 md:h-36 rounded-full flex items-center justify-center transition-all duration-300 shadow-2xl ${status === 'Listening' ? 'bg-gradient-to-br from-rose-500 to-red-600 shadow-rose-900/30 ring-4 ring-rose-500/20' :
+            status === 'Speaking' ? 'bg-gradient-to-br from-emerald-500 to-green-600 shadow-emerald-900/30 ring-4 ring-emerald-500/20' :
+              status === 'Thinking' ? 'bg-gradient-to-br from-amber-400 to-orange-500 shadow-amber-900/30 ring-4 ring-amber-500/20 animate-pulse' :
+                'bg-gradient-to-br from-zinc-800 to-zinc-900 border border-zinc-700/50 hover:border-indigo-500 hover:shadow-indigo-500/30 active:scale-95 group'
             }`}
         >
-          {status === 'Listening' ? <MicOff className="w-8 h-8 md:w-10 md:h-10 text-white" /> :
-            status === 'Speaking' ? <div className="space-x-1 flex h-4 md:h-6 items-center">
-              <div className="w-1 h-3 md:h-3 bg-white animate-pulse" />
-              <div className="w-1 h-5 md:h-6 bg-white animate-pulse delay-75" />
-              <div className="w-1 h-3 md:h-3 bg-white animate-pulse delay-150" />
+          {status === 'Listening' ? <MicOff className="w-10 h-10 md:w-12 md:h-12 text-white" /> :
+            status === 'Speaking' ? <div className="space-x-1.5 flex h-6 md:h-8 items-center">
+              <div className="w-1.5 h-4 md:h-5 bg-white rounded-full animate-bounce" style={{ animationDelay: '0s' }} />
+              <div className="w-1.5 h-8 md:h-10 bg-white rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
+              <div className="w-1.5 h-4 md:h-5 bg-white rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
             </div> :
-              status === 'Thinking' ? <Sparkles className="w-8 h-8 md:w-10 md:h-10 text-white animate-spin-slow" /> :
-                <Mic className={`w-8 h-8 md:w-10 md:h-10 ${status === 'Idle' ? 'text-slate-400' : 'text-white'}`} />
+              status === 'Thinking' ? <Sparkles className="w-10 h-10 md:w-12 md:h-12 text-white animate-spin-slow" /> :
+                <Mic className={`w-10 h-10 md:w-12 md:h-12 text-zinc-400 group-hover:text-indigo-400 transition-colors duration-300`} />
           }
         </button>
       </div>
 
-      <div className="w-full max-w-lg space-y-3 md:space-y-4">
+      <div className="w-full max-w-2xl space-y-4 md:space-y-6">
         {transcript && (
-          <div className="bg-slate-800/50 p-3 md:p-4 rounded-xl border border-slate-700/50 animate-in slide-in-from-bottom-2">
-            <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1 font-bold">You</p>
-            <p className="text-sm md:text-base text-slate-200">{transcript}</p>
+          <div className="glass-panel p-4 md:p-6 rounded-2xl animate-in slide-in-from-bottom-2 duration-500 shadow-lg border-l-4 border-l-indigo-500">
+            <p className="text-[10px] text-indigo-400 uppercase tracking-widest mb-2 font-bold flex items-center gap-2">
+              <span className="w-1 h-1 rounded-full bg-indigo-400"></span> You
+            </p>
+            <p className="text-lg md:text-xl text-zinc-100 font-medium leading-relaxed font-sans">{transcript}</p>
           </div>
         )}
         {aiResponse && (
-          <div className="bg-purple-900/20 p-3 md:p-4 rounded-xl border border-purple-500/20 animate-in slide-in-from-bottom-2">
-            <p className="text-[10px] text-purple-400 uppercase tracking-wider mb-1 font-bold">AI Agent</p>
-            <p className="text-sm md:text-base text-white">{aiResponse}</p>
+          <div className="glass-panel p-4 md:p-6 rounded-2xl animate-in slide-in-from-bottom-2 duration-500 delay-100 shadow-lg border-l-4 border-l-purple-500">
+            <p className="text-[10px] text-purple-400 uppercase tracking-widest mb-2 font-bold flex items-center gap-2">
+              <span className="w-1 h-1 rounded-full bg-purple-400"></span> AI Assistant
+            </p>
+            <p className="text-lg md:text-xl text-white font-medium leading-relaxed font-sans">{aiResponse}</p>
           </div>
         )}
       </div>
