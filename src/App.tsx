@@ -200,13 +200,18 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess, onTryDemo }) => {
 const authenticatedFetch = async (url: string, options: RequestInit = {}, retries = 3) => {
   console.log(`[Fetch] Calling: ${url}`);
   const { data: { session } } = await supabase.auth.getSession();
+  // Normalize headers to lowercase to avoid duplicates (e.g., 'Content-Type' vs 'content-type')
+  const incomingHeaders = new Headers(options.headers || {});
   const headers: Record<string, string> = {
-    ...Object.fromEntries(new Headers(options.headers || {}).entries()),
-    'Content-Type': 'application/json'
+    'content-type': 'application/json', // Default
   };
 
+  incomingHeaders.forEach((value, key) => {
+    headers[key.toLowerCase()] = value;
+  });
+
   if (session?.access_token) {
-    headers['Authorization'] = `Bearer ${session.access_token}`;
+    headers['authorization'] = `Bearer ${session.access_token}`;
   }
 
   for (let i = 0; i < retries; i++) {

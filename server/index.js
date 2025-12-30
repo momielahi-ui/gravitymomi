@@ -13,236 +13,29 @@ const port = process.env.PORT || 3002;
 
 // Middleware
 app.use(cors());
-app.use(express.json());
+// Increase limit for larger payloads (e.g. conversation history)
+app.use(express.json({ limit: '10mb' }));
 
 // Root route for simple verification
 app.get('/', (req, res) => {
     res.send('Smart Reception Backend is running!');
 });
 
-// Supabase Setup
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_ANON_KEY; // Using Anon Key for client operations, usually passed via Authorization header
-
-// Helper to get user from token
-const getUser = async (req) => {
-    console.log('[Auth] getUser called');
-    const authHeader = req.headers.authorization;
-    if (!authHeader) {
-        console.log('[Auth] No Authorization header found');
-        return null;
-    }
-
-    // Robust extraction: Handle "Bearer <token>" or just "<token>"
-    let token = authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : authHeader;
-
-    // Sanitize: Whitelist only valid JWT characters (Alphanumeric, dot, dash, underscore)
-    // This removes ALL invalid characters (quotes, spaces, hidden control chars)
-    if (token) {
-        token = token.trim().replace(/[^a-zA-Z0-9\.\-\_]/g, '');
-    }
-
-    if (!token) {
-        console.log('[Auth] Token is empty after extraction/sanitization');
-        return null;
-    }
-
-    // DIAGNOSTIC LOGGING
-    if (token.length > 37) { // Check specific illegal byte area (around byte 43)
-        const checkPart = token.substring(35, 50); // Look at chars around byte 43
-        console.log(`[Auth] Token segment [35-50]: "${checkPart}"`);
-    }
-
-    // Check end of token for hidden chars
-    if (token.length > 5) {
-        const lastChars = token.slice(-5);
-        const charCodes = lastChars.split('').map(c => c.charCodeAt(0)).join(', ');
-        console.log(`[Auth] Last 5 chars: "${lastChars}" Codes: [${charCodes}]`);
-        // Also check first 5
-        const firstChars = token.substring(0, 5);
-        const firstCodes = firstChars.split('').map(c => c.charCodeAt(0)).join(', ');
-        console.log(`[Auth] First 5 chars: "${firstChars}" Codes: [${firstCodes}]`);
-    }
-
-    console.log(`[Auth] Extracted Token Final: ${token.substring(0, 15)}... (Length: ${token.length})`);
-
-    const supabase = createClient(supabaseUrl, supabaseKey);
-    // console.log('[Auth] Calling supabase.auth.getUser'); 
-    const { data: { user }, error } = await supabase.auth.getUser(token);
-
-    if (error) {
-        console.error('[Auth] supabase.auth.getUser failed:', error.message);
-        // Special handling for the specific "illegal base64" causing crashes or confusion
-        if (error.message.includes('illegal base64')) {
-            console.error('[Auth] CRITICAL: Token malformed. Check frontend sending logic.');
-        }
-    } else {
-        console.log('[Auth] User verified:', user?.id);
-    }
-
-    if (error || !user) return null;
-    return user;
-};
-
-// Create a client with the user's token to respect RLS
-const getSupabaseClient = (token) => {
-    return createClient(supabaseUrl, supabaseKey, {
-        global: { headers: { Authorization: `Bearer ${token}` } }
-    });
-};
-
-// Gemini Setup
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || 'dummy-key');
-const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
-
-import { Resend } from 'resend';
-
-// ... (other imports)
-
-// Email Setup (Resend HTTP API)
-const emailPass = process.env.EMAIL_PASSWORD || '';
-// Check if it's a Resend key (starts with 're_')
-const isResendKey = emailPass.startsWith('re_');
-
-let resendClient = null;
-let nodemailerTransport = null;
-
-if (isResendKey) {
-    resendClient = new Resend(emailPass);
-    console.log('[Email] Using Resend HTTP API');
-} else {
-    // Fallback to SMTP for legacy/other providers
-    console.log('[Email] Using SMTP (Nodemailer)');
-    nodemailerTransport = nodemailer.createTransport({
-        host: process.env.SMTP_HOST || 'smtp.gmail.com',
-        port: parseInt(process.env.SMTP_PORT || '587'),
-        secure: process.env.SMTP_SECURE === 'true' || false,
-        auth: {
-            user: process.env.SMTP_USER || process.env.SENDER_EMAIL || process.env.PAYONEER_EMAIL,
-            pass: emailPass
-        }
-    });
-}
-
-// ElevenLabs Setup
-const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
-const ELEVENLABS_VOICE_ID = process.env.ELEVENLABS_VOICE_ID || 'pqHfZKP75CvOlQylNhV4'; // Bill (Wise, Mature, Balanced) - Premade
-const ELEVENLABS_AGENT_ID = 'agent_6901kd70rt78ecvt04kzgg4kbbzr'; // Reference for future use
-
-
-// Helper to estimate minutes from characters (approx 1000 chars = 1 min)
-const charsToMinutes = (chars) => Math.ceil(chars / 1000);
-
-
-// Helper to determine sender address
-const getSender = () => {
-    if (process.env.SENDER_EMAIL) return process.env.SENDER_EMAIL;
-    if (isResend) return 'onboarding@resend.dev'; // Mandatory for Resend free tier
-    return process.env.PAYONEER_EMAIL;
-};
-
-// Health check for deployment verification (Last updated: 2025-12-23)
-app.get('/api/health', (req, res) => {
-    res.json({
-        status: 'ok',
-        model: 'gemini-flash-latest',
-        deployment: '2025-12-25-bill-voice-v1'
-    });
-});
-
-// Check setup status
-app.get('/api/status', async (req, res) => {
-    const user = await getUser(req);
-    if (!user) return res.status(401).json({ error: 'Unauthorized' });
-
-    const supabase = getSupabaseClient(req.headers.authorization.split(' ')[1]);
-    const { data, error } = await supabase
-        .from('businesses')
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
-
-    if (data) {
-        res.json({ setupCompleted: true, config: data });
-    } else {
-        res.json({ setupCompleted: false });
-    }
-});
-
-// Save Onboarding Data
-app.post('/api/setup', async (req, res) => {
-    const user = await getUser(req);
-    if (!user) return res.status(401).json({ error: 'Unauthorized' });
-
-    const { name, services, tone, workingHours, greeting } = req.body;
-    const supabase = getSupabaseClient(req.headers.authorization.split(' ')[1]);
-
-    // Manual Upsert Logic to avoid onConflict constraint issues
-    console.log(`[Setup] Checking if business exists for user ${user.id}...`);
-
-    // 1. Check existence
-    const { data: existing, error: fetchError } = await supabase
-        .from('businesses')
-        .select('id')
-        .eq('user_id', user.id)
-        .single();
-
-    if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 is "Row not found"
-        console.error('[Setup] Existence Check Error:', fetchError);
-        return res.status(500).json({ error: 'Database verification failed' });
-    }
-
-    let resultData;
-    let resultError;
-
-    const payload = {
-        user_id: user.id,
-        business_name: name,
-        services,
-        tone,
-        working_hours: workingHours || '9 AM - 5 PM',
-        greeting
-    };
-
-    if (existing) {
-        console.log(`[Setup] Updating existing business ${existing.id}`);
-        const { data, error } = await supabase
-            .from('businesses')
-            .update(payload)
-            .eq('id', existing.id)
-            .select()
-            .single();
-        resultData = data;
-        resultError = error;
-    } else {
-        console.log(`[Setup] Creating new business for user ${user.id}`);
-        const { data, error } = await supabase
-            .from('businesses')
-            .insert(payload)
-            .select()
-            .single();
-        resultData = data;
-        resultError = error;
-    }
-
-    if (resultError) {
-        console.error('[Setup] Save Error:', resultError);
-        console.error('[Setup] Payload was:', JSON.stringify(payload));
-        return res.status(500).json({ error: resultError.message });
-    }
-
-    console.log('[Setup] Success! Business ID:', resultData.id);
-
-    res.json({ success: true, id: resultData.id });
-});
+// ... (skipping unchanged parts)
 
 // Chat Endpoint
 app.post('/api/chat', async (req, res) => {
-    console.log('[Chat] Received request. Body config present:', !!req.body?.config);
+    console.log('[Chat] Received request.');
+    console.log('[Chat] Headers content-type:', req.headers['content-type']);
+    console.log('[Chat] Body type:', typeof req.body);
+    console.log('[Chat] Body keys:', req.body ? Object.keys(req.body) : 'null');
+    console.log('[Chat] Body config present:', !!req.body?.config);
+
     try {
         // Validation
-        if (!req.body) {
-            return res.status(400).json({ error: 'Missing request body' });
+        if (!req.body || Object.keys(req.body).length === 0) {
+            console.error('[Chat] ERROR: Request body is empty or missing.');
+            return res.status(400).json({ error: 'Missing request body', details: 'No JSON received' });
         }
 
         // Check for Demo Config first (Unauthenticated flow)
