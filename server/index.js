@@ -40,11 +40,9 @@ const getUser = async (req) => {
     // 1. Trim whitespace
     token = token?.trim();
 
-    // 2. Remove surrounding quotes if they exist (handling both " and ')
+    // 2. Aggressively remove ANY quotes (valid JWTs never have quotes)
     if (token) {
-        if ((token.startsWith('"') && token.endsWith('"')) || (token.startsWith("'") && token.endsWith("'"))) {
-            token = token.slice(1, -1);
-        }
+        token = token.replace(/['"]+/g, '');
     }
 
     if (!token) {
@@ -52,8 +50,24 @@ const getUser = async (req) => {
         return null;
     }
 
-    // Debug log (safe) - Log first few chars to check for "Bearer" repetition or quotes
-    console.log(`[Auth] Extracted Token: ${token.substring(0, 15)}... (Length: ${token.length})`);
+    // DIAGNOSTIC LOGGING
+    if (token.length > 37) { // Check specific illegal byte area (around byte 43)
+        const checkPart = token.substring(35, 50); // Look at chars around byte 43
+        console.log(`[Auth] Token segment [35-50]: "${checkPart}"`);
+    }
+
+    // Check end of token for hidden chars
+    if (token.length > 5) {
+        const lastChars = token.slice(-5);
+        const charCodes = lastChars.split('').map(c => c.charCodeAt(0)).join(', ');
+        console.log(`[Auth] Last 5 chars: "${lastChars}" Codes: [${charCodes}]`);
+        // Also check first 5
+        const firstChars = token.substring(0, 5);
+        const firstCodes = firstChars.split('').map(c => c.charCodeAt(0)).join(', ');
+        console.log(`[Auth] First 5 chars: "${firstChars}" Codes: [${firstCodes}]`);
+    }
+
+    console.log(`[Auth] Extracted Token Final: ${token.substring(0, 15)}... (Length: ${token.length})`);
 
     const supabase = createClient(supabaseUrl, supabaseKey);
     // console.log('[Auth] Calling supabase.auth.getUser'); 
