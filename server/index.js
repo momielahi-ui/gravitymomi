@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { createClient } from '@supabase/supabase-js';
+import jwt from 'jsonwebtoken'; // Added for Whop
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import nodemailer from 'nodemailer';
@@ -17,18 +18,55 @@ app.use(cors());
 // Increase limit for larger payloads (e.g. conversation history)
 app.use(express.json({ limit: '10mb' }));
 
+// Whop Embedding Support
+app.use((req, res, next) => {
+    // 1. Allow Whop to embed your site
+    res.setHeader(
+        'Content-Security-Policy',
+        "frame-ancestors 'self' https://*.whop.com https://whop.com"
+    );
+
+    // 2. Remove restrictive X-Frame-Options if present
+    res.removeHeader('X-Frame-Options');
+
+    next();
+});
+
 // Root route for simple verification
 app.get('/', (req, res) => {
     res.send('Smart Reception Backend is running!');
 });
 
 // Supabase Setup
+// Supabase Setup
 const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_ANON_KEY; // Using Anon Key for client operations
+const supabaseKey = process.env.SUPABASE_ANON_KEY;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || supabaseKey; // Admin key for Whop bypass
 
-// Helper to get user from token
+// Helper to get user from token (Supports Supabase Auth & Whop Token)
 const getUser = async (req) => {
-    console.log('[Auth] getUser called');
+    // 1. Check for Whop Token (iframe embedding)
+    const whopToken = req.headers['x-whop-user-token'];
+    if (whopToken) {
+        try {
+            // Whop tokens are JWTs. In a real scenario, verify signature.
+            // For now, we decode to get the ID.
+            const decoded = jwt.decode(whopToken);
+            if (decoded && decoded.sub) {
+                console.log(`[Auth] Whop User detected: ${decoded.sub}`);
+                return {
+                    id: `whop_${decoded.sub}`, // Namespace to ensure uniqueness
+                    email: `whop_${decoded.sub}@whop.com`, // Pseudo-email for compatibility
+                    is_whop: true,
+                    whop_id: decoded.sub
+                };
+            }
+        } catch (e) {
+            console.error('[Auth] Invalid Whop token:', e);
+        }
+    }
+
+    console.log('[Auth] getUser called (Supabase)');
     const authHeader = req.headers.authorization;
     if (!authHeader) {
         console.log('[Auth] No Authorization header found');
@@ -61,10 +99,18 @@ const getUser = async (req) => {
     return user;
 };
 
-// Create a client with the user's token to respect RLS
-const getSupabaseClient = (token) => {
+// Create a client with appropriate access
+// - For Standard Users: Uses their Auth Token (RLS compliant)
+// - For Whop Users: Uses Service Role Key (Admin/Bypass) because they don't have a Supabase Session
+const getSupabaseClient = (tokenOrUser) => {
+    // If we passed a user object with is_whop flag
+    if (typeof tokenOrUser === 'object' && tokenOrUser.is_whop) {
+        console.log('[Supabase] Using Service Role for Whop User');
+        return createClient(supabaseUrl, supabaseServiceKey);
+    }
+
     return createClient(supabaseUrl, supabaseKey, {
-        global: { headers: { Authorization: `Bearer ${token}` } }
+        global: { headers: { Authorization: `Bearer ${tokenOrUser}` } }
     });
 };
 

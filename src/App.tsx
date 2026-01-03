@@ -6,6 +6,8 @@ import {
 } from 'lucide-react';
 import { supabase } from './lib/supabase';
 
+import logo from './assets/logo.png';
+
 // In production, set VITE_API_URL in your hosting provider (e.g. Vercel)
 const API_URL = import.meta.env.VITE_API_URL || 'https://gravitymomi.onrender.com/api';
 
@@ -97,8 +99,8 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess, onTryDemo }) => {
 
       <div className="w-full max-w-md relative z-10">
         <div className="text-center mb-10 space-y-4">
-          <div className="w-20 h-20 bg-black/40 backdrop-blur-2xl border border-white/10 rounded-[28px] flex items-center justify-center mx-auto shadow-2xl shadow-indigo-500/10 animate-float">
-            <Sparkles className="w-10 h-10 text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]" />
+          <div className="w-24 h-24 bg-black/40 backdrop-blur-2xl border border-white/10 rounded-[32px] flex items-center justify-center mx-auto shadow-2xl shadow-indigo-500/10 animate-float overflow-hidden p-4">
+            <img src={logo} alt="SmartReception Logo" className="w-full h-full object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]" />
           </div>
           <div>
             <h1 className="text-4xl font-semibold tracking-tight text-white drop-shadow-sm">SmartReception.ai</h1>
@@ -1973,24 +1975,65 @@ export default function App() {
   const [view, setView] = useState('loading'); // loading, auth, onboarding, dashboard, chat-demo, phone-demo, settings
   const [isDemoMode, setIsDemoMode] = useState(false);
 
+  // Handle URL Routing / Whop Integration
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      if (session) {
-        setIsDemoMode(false);
-        checkSetup(session);
-      } else if (!isDemoMode) {
-        setView('auth');
+    const handleRouting = async () => {
+      const path = window.location.pathname;
+      const params = new URLSearchParams(window.location.search);
+
+      console.log(`[App] Routing check: ${path}`);
+
+      // Check for simple demo mode query
+      if (params.get('demo') === 'true') {
+        handleTryDemo();
+        return;
       }
-    });
+
+      // Whop Routes: /dashboard/:id or /experiences/:id
+      // We assume if these paths are present, we should try to load the app state
+      // potentially bypassing the initial Auth screen if the backend session allows it.
+      if (path.startsWith('/dashboard/') || path.startsWith('/experiences/')) {
+        console.log('[App] Whop/Deep-link path detected.');
+
+        // If we have a session, standard logic applies.
+        // If NO session, we still try checkSetup because Whop might be proxying auth via headers
+        // or we might want to show a specific view.
+
+        // Short delay to ensure session load attempts finish first if any
+        await new Promise(r => setTimeout(r, 100));
+
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          setSession(session);
+          checkSetup(session);
+        } else {
+          // No local session, but maybe backend auth works (Whop Proxy)?
+          // Pass a dummy object to attempt fetch
+          // Note: authenticatedFetch handles missing session gracefully now? 
+          // We need to make sure we don't send "Bearer undefined"
+          checkSetup(null);
+        }
+      } else {
+        // Standard Root Path flow
+        supabase.auth.getSession().then(({ data: { session } }) => {
+          setSession(session);
+          if (session) {
+            setIsDemoMode(false);
+            checkSetup(session);
+          } else if (!isDemoMode) {
+            setView('auth');
+          }
+        });
+      }
+    };
+
+    handleRouting();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       if (session) {
         setIsDemoMode(false);
         checkSetup(session);
-      } else if (!isDemoMode) {
-        setView('auth');
       }
     });
 
@@ -2002,14 +2045,35 @@ export default function App() {
     if (view !== 'loading') setView('loading');
 
     try {
-      const res = await authenticatedFetch(`${API_URL}/status`, {
-        headers: { 'Authorization': `Bearer ${currentSession.access_token}` }
-      });
+      // If we have a session, use it. If not, use empty headers (Whop Proxy might fill them)
+      const headers: Record<string, string> = {};
+      if (currentSession?.access_token) {
+        headers['Authorization'] = `Bearer ${currentSession.access_token}`;
+      }
+
+      // Check for Whop Token in URL params just in case (manual override)
+      const params = new URLSearchParams(window.location.search);
+      const urlToken = params.get('token');
+      if (urlToken) {
+        headers['x-whop-user-token'] = urlToken; // Pass it through if manually provided
+      }
+
+      const res = await fetch(`${API_URL}/status`, { headers }); // Use raw fetch to control headers manually here
 
       if (res.status === 401) {
-        console.log("[App] Backend returned 401 - proceeding to onboarding");
-        setConfig({} as BusinessConfig);
-        setView('onboarding');
+        console.log("[App] Backend returned 401 - proceeding to auth/onboarding");
+
+        // If we are on a deep link but failed auth, we might redirect to auth
+        // OR if it's /experiences/..., maybe show demo?
+        if (window.location.pathname.startsWith('/experiences/')) {
+          console.log("Deep link failed auth -> forcing demo/onboarding");
+          setConfig({} as BusinessConfig);
+          setView('onboarding');
+          return;
+        }
+
+        setConfig(null);
+        setView('auth');
         return;
       }
 
@@ -2018,15 +2082,27 @@ export default function App() {
       const data = await res.json();
       if (data.setupCompleted) {
         setConfig(data.config);
-        setView('dashboard');
+
+        // Route to correct view based on Path
+        const path = window.location.pathname;
+        if (path.startsWith('/experiences/')) {
+          setView('chat-demo'); // Or phone-demo, depending on ID? Default to chat.
+        } else {
+          setView('dashboard');
+        }
       } else {
         setConfig(data.config || {});
         setView('onboarding');
       }
     } catch (err: any) {
       console.error("[App] checkSetup Error:", err);
-      setConfig({} as BusinessConfig);
-      setView('onboarding');
+      // Fallback
+      if (window.location.pathname.startsWith('/experiences/')) {
+        handleTryDemo(); // Fallback to demo for experience links if fail
+      } else {
+        setConfig(null);
+        setView('auth');
+      }
     }
   };
 
@@ -2044,7 +2120,7 @@ export default function App() {
 
   const handleTryDemo = () => {
     setIsDemoMode(true);
-    setConfig({} as BusinessConfig);
+    setConfig({} as BusinessConfig); // Empty config starts Onboarding flow
     setView('onboarding');
   };
 
