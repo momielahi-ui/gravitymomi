@@ -1050,6 +1050,11 @@ app.post('/webhooks/twilio/status', express.urlencoded({ extended: false }), val
         console.error('Status callback error:', err);
         res.sendStatus(500);
     }
+    // Serve sitemap.xml explicitly for Google Search Console
+    app.get('/sitemap.xml', (req, res) => {
+        res.sendFile(path.join(__dirname, '../dist/sitemap.xml'));
+    });
+
     // Serve static files from the React app (Vite build)
     app.use(express.static(path.join(__dirname, '../dist')));
 
