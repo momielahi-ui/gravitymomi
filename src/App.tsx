@@ -7,6 +7,8 @@ import {
 import { supabase } from './lib/supabase';
 
 import logo from './assets/logo.png';
+import { resources } from './resourceData';
+import type { ResourceContent } from './resourceData';
 
 // In production, set VITE_API_URL in your hosting provider (e.g. Vercel)
 const API_URL = import.meta.env.VITE_API_URL || 'https://gravitymomi.onrender.com/api';
@@ -55,112 +57,263 @@ const Badge: React.FC<BadgeProps> = ({ children, color = 'blue' }) => {
 // --- Static Information Pages ---
 
 const PrivacyPolicy: React.FC = () => (
-  <div className="max-w-4xl mx-auto py-12 px-6 text-slate-300 space-y-8 animate-in fade-in duration-700">
-    <h1 className="text-4xl font-bold text-white mb-8">Privacy Policy</h1>
-    <section className="space-y-4">
-      <h2 className="text-2xl font-semibold text-white">1. Information We Collect</h2>
-      <p>Smareceptionai.xyz collects minimal data required to provide our AI reception services. This includes your business name, email address, and configuration settings for your AI assistant.</p>
-    </section>
-    <section className="space-y-4">
-      <h2 className="text-2xl font-semibold text-white">2. GDPR & CCPA Compliance</h2>
-      <p>We respect your privacy rights under GDPR and CCPA. You have the right to access, rectify, or delete your personal data. We do not sell your personal information to third parties.</p>
-    </section>
-    <section className="space-y-4">
-      <h2 className="text-2xl font-semibold text-white">3. Cookies</h2>
-      <p>We use essential cookies to maintain your session and ensure the security of your account. By using our site, you consent to these cookies.</p>
-    </section>
-    <section className="space-y-4">
-      <h2 className="text-2xl font-semibold text-white">4. Contact Us</h2>
-      <p>If you have questions about this policy, contact us at support@smarteceptionai.xyz.</p>
-    </section>
+  <div className="max-w-4xl mx-auto py-16 px-6 text-slate-300">
+    <h1 className="text-4xl font-bold text-white mb-8 tracking-tight">Privacy Policy</h1>
+    <div className="glass-panel-pro p-8 md:p-12 rounded-[40px] border border-white/5 bg-slate-900/50 backdrop-blur-3xl prose prose-invert prose-indigo max-w-none space-y-6 text-lg font-light leading-relaxed">
+      <p>Last Updated: January 8, 2026</p>
+
+      <p>At SmartReception.ai, one of our main priorities is the privacy of our visitors. This Privacy Policy document contains types of information that is collected and recorded by SmartReception.ai and how we use it. If you have additional questions or require more information about our Privacy Policy, do not hesitate to contact us.</p>
+
+      <h2 className="text-2xl font-bold text-white mt-8 mb-4">Log Files</h2>
+      <p>SmartReception.ai follows a standard procedure of using log files. These files log visitors when they visit websites. All hosting companies do this and a part of hosting services' analytics. The information collected by log files include internet protocol (IP) addresses, browser type, Internet Service Provider (ISP), date and time stamp, referring/exit pages, and possibly the number of clicks. These are not linked to any information that is personally identifiable.</p>
+
+      <h2 className="text-2xl font-bold text-white mt-8 mb-4">Cookies and Web Beacons</h2>
+      <p>Like any other website, SmartReception.ai uses "cookies". These cookies are used to store information including visitors' preferences, and the pages on the website that the visitor accessed or visited. The information is used to optimize the users' experience by customizing our web page content based on visitors' browser type and/or other information.</p>
+
+      <h2 className="text-2xl font-bold text-white mt-8 mb-4">Google DoubleClick DART Cookie</h2>
+      <p>Google is one of a third-party vendor on our site. It also uses cookies, known as DART cookies, to serve ads to our site visitors based upon their visit to www.smartreceptionai.xyz and other sites on the internet. However, visitors may choose to decline the use of DART cookies by visiting the Google ad and content network Privacy Policy at the following URL – <a href="https://policies.google.com/technologies/ads" className="text-indigo-400 hover:text-white underline" target="_blank" rel="noopener noreferrer">https://policies.google.com/technologies/ads</a></p>
+
+      <h2 className="text-2xl font-bold text-white mt-8 mb-4">Our Advertising Partners</h2>
+      <p>Some of advertisers on our site may use cookies and web beacons. Our advertising partners include:</p>
+      <ul className="list-disc pl-6 space-y-2">
+        <li className="font-semibold text-white">Google AdSense</li>
+      </ul>
+      <p>Each of our advertising partners has their own Privacy Policy for their policies on user data. For easier access, we hyperlinked to their Privacy Policies above.</p>
+
+      <h2 className="text-2xl font-bold text-white mt-8 mb-4">Privacy Policies</h2>
+      <p>Third-party ad servers or ad networks uses technologies like cookies, JavaScript, or Web Beacons that are used in their respective advertisements and links that appear on SmartReception.ai, which are sent directly to users' browser. They automatically receive your IP address when this occurs. These technologies are used to measure the effectiveness of their advertising campaigns and/or to personalize the advertising content that you see on websites that you visit.</p>
+      <p>Note that SmartReception.ai has no access to or control over these cookies that are used by third-party advertisers.</p>
+
+      <h2 className="text-2xl font-bold text-white mt-8 mb-4">Data Processing Agreements (DPA)</h2>
+      <p>For our business users, SmartReception.ai maintains strict Data Processing Agreements. We ensure all voice and chat transcripts are handled according to industry standards, including encryption at rest and in transit. We do not sell user data to third parties.</p>
+
+      <h2 className="text-2xl font-bold text-white mt-8 mb-4">Consent</h2>
+      <p>By using our website, you hereby consent to our Privacy Policy and agree to its Terms and Conditions.</p>
+    </div>
   </div>
 );
 
 const TermsAndConditions: React.FC = () => (
-  <div className="max-w-4xl mx-auto py-12 px-6 text-slate-300 space-y-8 animate-in fade-in duration-700">
-    <h1 className="text-4xl font-bold text-white mb-8">Terms & Conditions</h1>
-    <section className="space-y-4">
-      <h2 className="text-2xl font-semibold text-white">1. Acceptance of Terms</h2>
-      <p>By accessing SmartReception.ai, you agree to be bound by these terms. Our service provides an AI-driven receptionist for business use.</p>
-    </section>
-    <section className="space-y-4">
-      <h2 className="text-2xl font-semibold text-white">2. Use of Service</h2>
-      <p>You agree not to use the service for any illegal or unauthorized purpose. You are responsible for maintaining the confidentiality of your account.</p>
-    </section>
-    <section className="space-y-4">
-      <h2 className="text-2xl font-semibold text-white">3. Limitation of Liability</h2>
-      <p>SmartReception.ai shall not be liable for any indirect, incidental, or consequential damages resulting from the use of our services.</p>
-    </section>
+  <div className="max-w-4xl mx-auto py-16 px-6 text-slate-300">
+    <h1 className="text-4xl font-bold text-white mb-8 tracking-tight">Terms & Conditions</h1>
+    <div className="glass-panel-pro p-8 md:p-12 rounded-[40px] border border-white/5 bg-slate-900/50 backdrop-blur-3xl prose prose-invert prose-indigo max-w-none space-y-6 text-lg font-light leading-relaxed text-slate-400">
+      <h2 className="text-2xl font-bold text-white">1. Acceptance of Terms</h2>
+      <p>By accessing SmartReception.ai, you agree to be bound by these Terms and Conditions. Our service provides a sophisticated AI-driven receptionist platform for businesses. You must be at least 18 years old to use this service.</p>
+
+      <h2 className="text-2xl font-bold text-white">2. Use of Service</h2>
+      <p>You agree to use SmartReception.ai only for lawful purposes. You are solely responsible for compliance with all applicable laws and regulations in your jurisdiction regarding automated communication and data recording.</p>
+
+      <h2 className="text-2xl font-bold text-white">3. Ethical AI Policy</h2>
+      <p>Users are prohibited from using our AI for deceptive practices, spamming, or harassment. We reserve the right to terminate accounts that violate our ethical guidelines.</p>
+
+      <h2 className="text-2xl font-bold text-white">4. Limitation of Liability</h2>
+      <p>SmartReception.ai provides its services "as is." We shall not be liable for any indirect, incidental, or consequential damages arising from the use or inability to use our platform.</p>
+    </div>
   </div>
 );
 
 const AboutUs: React.FC = () => (
-  <div className="max-w-4xl mx-auto py-12 px-6 text-slate-300 space-y-8 animate-in fade-in duration-700">
-    <h1 className="text-4xl font-bold text-white mb-8">About SmartReception.ai</h1>
-    <p className="text-lg leading-relaxed">
-      At SmartReception.ai, we are redefining how businesses handle customer interactions. Our mission is to provide every business with a high-end, intelligent AI workforce that ensures no call or message goes unanswered.
-    </p>
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">
-      <Card className="p-6">
-        <h3 className="text-xl font-bold text-white mb-2">Our Vision</h3>
-        <p>To be the world's leading provider of AI-driven customer service solutions, making premium reception services accessible to businesses of all sizes.</p>
-      </Card>
-      <Card className="p-6">
-        <h3 className="text-xl font-bold text-white mb-2">Our Technology</h3>
-        <p>We leverage cutting-edge LLMs and voice synthesis to create AI personas that are not just efficient, but also warm and professional.</p>
-      </Card>
+  <div className="max-w-5xl mx-auto py-16 px-6 text-slate-300">
+    <div className="max-w-3xl mx-auto text-center mb-16 space-y-4">
+      <Badge color="indigo">Our Story</Badge>
+      <h1 className="text-5xl font-bold text-white tracking-tight">The Human Side of AI</h1>
+      <p className="text-xl text-zinc-400 font-light leading-relaxed">
+        Building the bridge between technological efficiency and human empathy since 2024.
+      </p>
+    </div>
+
+    <div className="space-y-16">
+      <div className="prose prose-invert prose-indigo max-w-none text-lg leading-relaxed font-light space-y-8">
+        <p>SmartReception.ai was born out of a simple, frustrating observation: in a world of instant information, business communication was still stuck in the 20th century. Our founders, a team of engineers and customer experience specialists, saw too many small businesses struggling to balance deep work with the constant demands of the telephone.</p>
+
+        <p>We didn't set out to replace humans. We set out to <strong>amplify</strong> them. We believe that every business, regardless of size, deserves a professional front-desk presence that reflects their values and expertise. Our AI is designed to handle the routine, the repetitive, and the 2:00 AM inquiries, so that human experts can focus on what they do best: building relationships and solving complex problems.</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        {[
+          { title: "Empathetic Design", desc: "Our AI is trained with emotional intelligence at its core, ensuring every caller feels respected and heard." },
+          { title: "Uncompromising Privacy", desc: "We believe privacy is a human right. Every interaction we facilitate is encrypted and secure." },
+          { title: "Global Accessibility", desc: "Our goal is to break language and time barriers, making business truly global and inclusive." }
+        ].map((v, i) => (
+          <Card key={i} className="p-8 border-white/5 bg-white/[0.02]">
+            <h3 className="text-xl font-bold text-white mb-4">{v.title}</h3>
+            <p className="text-zinc-500 text-sm leading-relaxed">{v.desc}</p>
+          </Card>
+        ))}
+      </div>
+
+      <div className="bg-indigo-500/5 border border-indigo-500/10 p-12 rounded-[40px] text-center">
+        <h2 className="text-3xl font-bold text-white mb-6">Our Mission</h2>
+        <p className="text-xl text-indigo-200 font-light max-w-2xl mx-auto">
+          "To provide every business on earth with a world-class, intelligent front-desk, ensuring that no human opportunity is ever lost to a missed connection."
+        </p>
+      </div>
     </div>
   </div>
 );
 
 const ContactUs: React.FC = () => (
-  <div className="max-w-4xl mx-auto py-12 px-6 text-slate-300 space-y-8 animate-in fade-in duration-700">
-    <h1 className="text-4xl font-bold text-white mb-8">Contact Us</h1>
-    <p className="text-lg">Need help or have questions? Our team is here to support you.</p>
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mt-8">
-      <div className="space-y-6">
-        <div className="flex items-center gap-4">
-          <div className="p-3 bg-indigo-500/10 rounded-2xl">
-            <Mail className="w-6 h-6 text-indigo-400" />
-          </div>
-          <div>
-            <p className="text-sm font-semibold text-white">Email Us</p>
-            <p className="text-zinc-400">support@smarteceptionai.xyz</p>
-          </div>
+  <div className="max-w-6xl mx-auto py-16 px-6">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+      <div className="space-y-12">
+        <div className="space-y-4">
+          <Badge color="purple">Get in Touch</Badge>
+          <h1 className="text-5xl font-bold text-white tracking-tight">How can we help?</h1>
+          <p className="text-zinc-400 text-lg font-light leading-relaxed">
+            Whether you have a technical question or want to explore enterprise-grade scaling, our experts are ready to assist you.
+          </p>
         </div>
-        <div className="flex items-center gap-4">
-          <div className="p-3 bg-indigo-500/10 rounded-2xl">
-            <Globe className="w-6 h-6 text-indigo-400" />
-          </div>
-          <div>
-            <p className="text-sm font-semibold text-white">Headquarters</p>
-            <p className="text-zinc-400">Tech Hub, Digital Valley</p>
-          </div>
+
+        <div className="space-y-8">
+          {[
+            { icon: <Mail className="w-6 h-6" />, label: "Email Support", value: "support@smartreceptionai.xyz", desc: "Average response: 4 hours" },
+            { icon: <Globe className="w-6 h-6" />, label: "Global HQ", value: "123 Innovation Drive, Tech City, 90210", desc: "Open for consultations by appointment" }
+          ].map((item, i) => (
+            <div key={i} className="flex items-start gap-6 group">
+              <div className="p-4 bg-indigo-500/10 rounded-2xl text-indigo-400 group-hover:bg-indigo-500/20 transition-colors">
+                {item.icon}
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm font-bold text-white uppercase tracking-widest text-[10px]">{item.label}</p>
+                <p className="text-xl text-zinc-100 font-medium">{item.value}</p>
+                <p className="text-sm text-zinc-500">{item.desc}</p>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
-      <Card className="p-6 bg-indigo-500/5 border-indigo-500/10">
-        <p className="text-sm italic text-zinc-400">"We aim to respond to all inquiries within 24 business hours. Thank you for choosing SmartReception.ai."</p>
+
+      <Card className="p-8 md:p-10 border-white/5 bg-slate-900/40 backdrop-blur-2xl rounded-[40px]">
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Full Name</label>
+              <input type="text" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 transition" placeholder="John Doe" />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Work Email</label>
+              <input type="email" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 transition" placeholder="john@company.com" />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Subject</label>
+            <input type="text" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 transition" placeholder="Inquiry about Enterprise Plans" />
+          </div>
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Message</label>
+            <textarea className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 transition h-32" placeholder="Tell us how we can assist your business..."></textarea>
+          </div>
+          <button className="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-4 rounded-xl transition shadow-lg shadow-indigo-500/20 active:scale-[0.98]">
+            Send Message
+          </button>
+          <p className="text-center text-xs text-zinc-600">By clicking send, you agree to our privacy policy and data processing standards.</p>
+        </div>
       </Card>
     </div>
   </div>
 );
+      </Card >
+    </div >
+  </div >
+);
 
 const Footer: React.FC<{ onNavigate: (view: string) => void }> = ({ onNavigate }) => (
-  <footer className="w-full py-12 border-t border-white/5 mt-auto relative z-10">
-    <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8">
-      <div className="flex items-center gap-2">
-        <img src={logo} alt="Logo" className="w-6 h-6 object-contain" />
-        <span className="text-white font-semibold">SmartReception.ai</span>
+  <footer className="w-full py-12 border-t border-white/5 mt-auto relative z-10 bg-slate-950">
+    <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12">
+      <div className="space-y-4">
+        <div className="flex items-center gap-2">
+          <img src={logo} alt="Logo" className="w-8 h-8 object-contain" />
+          <span className="text-white font-bold text-xl tracking-tight">SmartReception.ai</span>
+        </div>
+        <p className="text-zinc-500 text-sm leading-relaxed">
+          The world's leading AI workforce management platform. Providing ultra-low latency voice and chat receptionists for modern businesses.
+        </p>
       </div>
-      <div className="flex flex-wrap justify-center gap-6 text-sm">
-        <button onClick={() => onNavigate('about-us')} className="text-zinc-500 hover:text-white transition">About Us</button>
-        <button onClick={() => onNavigate('contact-us')} className="text-zinc-500 hover:text-white transition">Contact Us</button>
-        <button onClick={() => onNavigate('privacy-policy')} className="text-zinc-500 hover:text-white transition">Privacy Policy</button>
-        <button onClick={() => onNavigate('terms-conditions')} className="text-zinc-500 hover:text-white transition">Terms & Conditions</button>
+      <div>
+        <h4 className="text-white font-semibold mb-4">Services</h4>
+        <div className="flex flex-col gap-2 text-sm">
+          <button onClick={() => onNavigate('service-ai-chat')} className="text-zinc-500 hover:text-white transition text-left">AI Chat Receptionist</button>
+          <button onClick={() => onNavigate('service-ai-voice')} className="text-zinc-500 hover:text-white transition text-left">AI Voice Receptionist</button>
+          <button onClick={() => onNavigate('service-automation')} className="text-zinc-500 hover:text-white transition text-left">Business Automation</button>
+        </div>
       </div>
-      <p className="text-zinc-600 text-xs">© 2026 SmartReception.ai. All rights reserved.</p>
+      <div>
+        <h4 className="text-white font-semibold mb-4">Resources</h4>
+        <div className="flex flex-col gap-2 text-sm">
+          <button onClick={() => onNavigate('resource-hub')} className="text-zinc-500 hover:text-white transition text-left">Resource Hub</button>
+          <button onClick={() => onNavigate('about-us')} className="text-zinc-500 hover:text-white transition text-left">About Us</button>
+          <button onClick={() => onNavigate('contact-us')} className="text-zinc-500 hover:text-white transition text-left">Contact Us</button>
+        </div>
+      </div>
+      <div>
+        <h4 className="text-white font-semibold mb-4">Legal</h4>
+        <div className="flex flex-col gap-2 text-sm">
+          <button onClick={() => onNavigate('privacy-policy')} className="text-zinc-500 hover:text-white transition text-left">Privacy Policy</button>
+          <button onClick={() => onNavigate('terms-conditions')} className="text-zinc-500 hover:text-white transition text-left">Terms & Conditions</button>
+          <div className="mt-4 pt-4 border-t border-white/5">
+            <p className="text-zinc-600 text-xs">© 2026 SmartReception.ai. All rights reserved.</p>
+          </div>
+        </div>
+      </div>
     </div>
   </footer>
+);
+
+const ResourceHub: React.FC<{ onNavigate: (view: string) => void }> = ({ onNavigate }) => (
+  <div className="max-w-7xl mx-auto py-16 px-6">
+    <div className="text-center mb-16 space-y-4">
+      <Badge color="purple">Knowledge Base</Badge>
+      <h1 className="text-5xl font-bold text-white tracking-tight">Resource Hub</h1>
+      <p className="text-zinc-400 text-xl max-w-2xl mx-auto font-light">
+        Expert insights, industry trends, and deep-dive case studies on the future of business communication.
+      </p>
+    </div>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      {resources.map((item) => (
+        <Card key={item.id} className="group p-6 flex flex-col h-full cursor-pointer hover:border-indigo-500/50 transition-all" onClick={() => onNavigate(`resource-${item.id}`)}>
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-indigo-400 bg-indigo-500/10 px-2 py-1 rounded">{item.category}</span>
+            <span className="text-zinc-500 text-xs flex items-center gap-1"><Clock className="w-3 h-3" /> {item.readTime}</span>
+          </div>
+          <h3 className="text-xl font-bold text-white mb-3 group-hover:text-indigo-400 transition-colors">{item.title}</h3>
+          <p className="text-zinc-400 text-sm leading-relaxed mb-6 flex-1">{item.description}</p>
+          <div className="flex items-center text-indigo-400 text-sm font-semibold group-hover:translate-x-1 transition-transform">
+            Read Full Article <Sparkles className="w-4 h-4 ml-2" />
+          </div>
+        </Card>
+      ))}
+    </div>
+  </div>
+);
+
+const ServiceSilo: React.FC<{ title: string; subtitle: string; content: React.ReactNode }> = ({ title, subtitle, content }) => (
+  <div className="max-w-5xl mx-auto py-16 px-6 text-slate-300 animate-in fade-in duration-1000">
+    <div className="mb-12 space-y-4 text-center">
+      <h1 className="text-5xl md:text-6xl font-bold text-white tracking-tight">{title}</h1>
+      <p className="text-xl text-indigo-400 font-medium tracking-wide">{subtitle}</p>
+    </div>
+    <div className="prose prose-invert prose-indigo max-w-none space-y-8 text-lg leading-relaxed">
+      {content}
+    </div>
+  </div>
+);
+
+const ResourceDetail: React.FC<{ item: ResourceContent }> = ({ item }) => (
+  <div className="max-w-4xl mx-auto py-16 px-6 text-slate-300 animate-in fade-in slide-in-from-bottom-8 duration-1000">
+    <div className="mb-12 space-y-6 text-center">
+      <div className="flex items-center justify-center gap-4 text-xs font-bold uppercase tracking-widest">
+        <span className="text-indigo-400">{item.category}</span>
+        <span className="text-zinc-600">•</span>
+        <span className="text-zinc-500">{item.readTime} Read</span>
+      </div>
+      <h1 className="text-4xl md:text-5xl font-bold text-white leading-tight tracking-tight">{item.title}</h1>
+    </div>
+    <div className="p-8 md:p-12 rounded-[40px] border border-white/5 bg-slate-900/50 backdrop-blur-3xl">
+      <div className="prose prose-invert prose-indigo max-w-none space-y-6 whitespace-pre-wrap font-light leading-relaxed text-lg text-slate-300">
+        {item.content}
+      </div>
+    </div>
+  </div>
 );
 
 interface AuthProps {
@@ -2261,6 +2414,11 @@ export default function App() {
   if (view === 'terms-conditions') return <AppShell onLogout={handleLogout} user={isDemoMode ? { email: 'Demo User' } : session?.user} onViewChange={setView}><TermsAndConditions /></AppShell>;
   if (view === 'about-us') return <AppShell onLogout={handleLogout} user={isDemoMode ? { email: 'Demo User' } : session?.user} onViewChange={setView}><AboutUs /></AppShell>;
   if (view === 'contact-us') return <AppShell onLogout={handleLogout} user={isDemoMode ? { email: 'Demo User' } : session?.user} onViewChange={setView}><ContactUs /></AppShell>;
+  if (view === 'resource-hub') return <AppShell onLogout={handleLogout} user={isDemoMode ? { email: 'Demo User' } : session?.user} onViewChange={setView}><ResourceHub onNavigate={setView} /></AppShell>;
+  if (view.startsWith('resource-')) {
+    const resource = resources.find(r => r.id === view.replace('resource-', ''));
+    if (resource) return <AppShell onLogout={handleLogout} user={isDemoMode ? { email: 'Demo User' } : session?.user} onViewChange={setView}><ResourceDetail item={resource} /></AppShell>;
+  }
 
   // Validation
   if (!config && !isDemoMode && view !== 'loading') {
@@ -2276,6 +2434,88 @@ export default function App() {
       {view === 'admin' && <AdminView onNavigate={setView} />}
       {view === 'chat-demo' && <ChatDemoView config={config || {} as BusinessConfig} isDemoMode={isDemoMode} />}
       {view === 'phone-demo' && <VoiceDemoView config={config || {} as BusinessConfig} isDemoMode={isDemoMode} />}
+      {view === 'service-ai-chat' && (
+        <ServiceSilo
+          title="AI Chat Receptionist"
+          subtitle="24/7 Intelligent Text Engagement"
+          content={
+            <>
+              <p>In the digital-first economy of 2026, your website's chat interface is often the very first touchpoint for potential clients. A "Coming Soon" banner or a slow, unresponsive bot is no longer acceptable. SmartReception.ai provides an industry-leading AI Chat Receptionist designed to convert visitors into loyal customers through instant, empathetic, and highly accurate engagement.</p>
+
+              <h2 className="text-2xl font-bold text-white mt-8 mb-4">The Value of Instant Qualification</h2>
+              <p>Our AI Chat Receptionist doesn't just "take messages." It is a dynamic sales agent trained in your specific business logic. It qualifies leads in real-time by asking the right questions—budget, timeline, service requirements—ensuring that your human team only spends time with high-intent prospects. This "filtered" approach increases sales efficiency by an average of 45%.</p>
+
+              <h2 className="text-2xl font-bold text-white mt-8 mb-4">Deep CRM & Calendar Integration</h2>
+              <p>Unlike basic chatbots, our system is deeply integrated with the tools you already use. Salesforce, HubSpot, and Pipedrive are updated instantly with lead transcripts and priority scores. Furthermore, the AI can schedule consultations directly into your Google or Outlook calendar, capturing the "impulse" moment when a lead is most likely to commit.</p>
+
+              <h2 className="text-2xl font-bold text-white mt-8 mb-4">E-E-A-T Compliant Communication</h2>
+              <p>We prioritize Experience, Expertise, Authoritativeness, and Trustworthiness in every interaction. The AI is configured to handle sensitive inquiries with professional stoicism, particularly in high-stakes fields like Law and Finance. It provides accurate, documentation-backed answers to FAQs, reducing the administrative burden on your support staff by up to 70%.</p>
+
+              <h2 className="text-2xl font-bold text-white mt-8 mb-4">Multilingual Global Reach</h2>
+              <p>Break language barriers instantly. Our AI Chat switches seamlessly between 30+ languages, providing a native-level experience for global users. This ensures that no matter where your visitors are coming from, they feel seen, heard, and valued by your brand.</p>
+
+              <div className="bg-indigo-500/10 border border-indigo-500/20 p-8 rounded-3xl mt-12">
+                <h3 className="text-xl font-bold text-white mb-4 italic">"The AI Chat Receptionist turned our static website into a 24/7 sales engine. We saw a 3x increase in qualified leads within the first month."</h3>
+                <p className="text-indigo-300">— CEO, Premier Legal Associates</p>
+              </div>
+            </>
+          }
+        />
+      )}
+      {view === 'service-ai-voice' && (
+        <ServiceSilo
+          title="AI Voice Receptionist"
+          subtitle="The Future of Professional Telephony"
+          content={
+            <>
+              <p>Telephone communication remains the most personal and high-trust channel for business. However, maintaining a 24/7 human staff is prohibitively expensive for most organizations. SmartReception.ai bridges this gap with ultra-low latency Voice AI that sounds remarkably human, professional, and mature.</p>
+
+              <h2 className="text-2xl font-bold text-white mt-8 mb-4">Sub-Second Latency for Natural Flow</h2>
+              <p>The "robotic pause" is a thing of the past. Our Voice AI operates with sub-second response times, allowing for a fluid, natural conversation that builds rapport rather than frustration. Clients often forget they are speaking with an AI as they are guided through appointment settings or service inquiries.</p>
+
+              <h2 className="text-2xl font-bold text-white mt-8 mb-4">Professional Persona Management</h2>
+              <p>Choose the specific "Voice" of your brand. Whether you need the stoic, authoritative tone of a high-end wealth management firm or the warm, enthusiastic greeting of a boutique creative agency, our personas are fully customizable. We use advanced prosody modeling to ensure the AI's intonation reflects the empathy and expertise your clients expect.</p>
+
+              <h2 className="text-2xl font-bold text-white mt-8 mb-4">Infinite Scalability</h2>
+              <p>Never miss a call again. Our Voice AI can handle 1,000 simultaneous calls with zero degradation in quality. During marketing spikes or seasonal peaks, your service remains perfectly responsive. This eliminates the "voicemail death spiral" where 85% of callers who reach a machine simply hang up and call your competitor.</p>
+
+              <h2 className="text-2xl font-bold text-white mt-8 mb-4">HIPAA & GDPR Secure</h2>
+              <p>Security is not an afterthought. Every voice interaction is encrypted end-to-end. For medical and financial clients, our system adheres to strict HIPAA and GDPR standards, ensuring that patient PII and client data are handled with the highest level of cryptographic integrity.</p>
+            </>
+          }
+        />
+      )}
+      {view === 'service-automation' && (
+        <ServiceSilo
+          title="Business Automation"
+          subtitle="Scale Effortlessly with AI Workforce"
+          content={
+            <>
+              <p>Beyond simple greetings, SmartReception.ai offers full-scale business process automation. We integrate AI into the core of your administrative workflows, reclaiming up to 15 hours per week for business owners and senior partners.</p>
+
+              <h2 className="text-2xl font-bold text-white mt-8 mb-4">Automated Appointment Management</h2>
+              <p>The back-and-forth of scheduling is a major productivity drain. Our system handles the entire lifecycle: initial booking, HIPAA-compliant intake forms, 48-hour reminders, and instant rescheduling. This proactive approach reduces no-shows by an average of 40%.</p>
+
+              <h2 className="text-2xl font-bold text-white mt-8 mb-4">Workflow Orchestration</h2>
+              <p>Our AI doesn't just talk; it *acts*. Based on the conversation context, it can trigger Zapier workflows, update Shopify orders, or alert specific team members via Slack. It becomes the intelligent "nerve center" of your business operations.</p>
+
+              <h2 className="text-2xl font-bold text-white mt-8 mb-4">Lead Nurture & Database Reactivation</h2>
+              <p>Don't let cold leads die in your CRM. Our automation layer can perform proactive, professional follow-ups to reactivate dormant databases, turning "maybe later" into "book now." This ensures that every dollar you spend on marketing is fully leveraged for maximum ROI.</p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">
+                <Card className="p-6 border-indigo-500/20 bg-indigo-500/5">
+                  <h4 className="text-white font-bold mb-2">Operational Efficiency</h4>
+                  <p className="text-sm text-zinc-400">Reduce administrative overhead by 60% while increasing your response speed to sub-5 minutes.</p>
+                </Card>
+                <Card className="p-6 border-purple-500/20 bg-purple-500/5">
+                  <h4 className="text-white font-bold mb-2">Revenue Capture</h4>
+                  <p className="text-sm text-zinc-400">Never walk away from a lead. 24/7 availability ensures you capture high-intent inquiries while your competitors are asleep.</p>
+                </Card>
+              </div>
+            </>
+          }
+        />
+      )}
     </AppShell>
   );
 }
