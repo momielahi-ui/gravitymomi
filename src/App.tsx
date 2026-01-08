@@ -30,7 +30,7 @@ const Card: React.FC<CardProps> = ({ children, className = '', onClick }) => (
   </div>
 );
 
-type BadgeColor = 'blue' | 'purple' | 'green' | 'amber' | 'red';
+type BadgeColor = 'blue' | 'purple' | 'green' | 'amber' | 'red' | 'indigo';
 
 interface BadgeProps {
   children: React.ReactNode;
@@ -43,7 +43,8 @@ const Badge: React.FC<BadgeProps> = ({ children, color = 'blue' }) => {
     purple: 'bg-violet-500/10 text-violet-300 border border-violet-500/20 shadow-[0_0_15px_rgba(139,92,246,0.1)]',
     green: 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.1)]',
     amber: 'bg-amber-500/10 text-amber-300 border border-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.1)]',
-    red: 'bg-rose-500/10 text-rose-300 border border-rose-500/20 shadow-[0_0_15px_rgba(244,63,94,0.1)]'
+    red: 'bg-rose-500/10 text-rose-300 border border-rose-500/20 shadow-[0_0_15px_rgba(244,63,94,0.1)]',
+    indigo: 'bg-indigo-600/10 text-indigo-400 border border-indigo-600/20 shadow-[0_0_15px_rgba(79,70,229,0.1)]'
   };
   return (
     <span className={`px-3 py-1 rounded-full text-[11px] font-semibold tracking-wide uppercase ${colors[color] || colors.blue}`}>
@@ -211,10 +212,6 @@ const ContactUs: React.FC = () => (
       </Card>
     </div>
   </div>
-);
-      </Card >
-    </div >
-  </div >
 );
 
 const Footer: React.FC<{ onNavigate: (view: string) => void }> = ({ onNavigate }) => (
