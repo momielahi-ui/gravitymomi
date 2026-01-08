@@ -7,6 +7,11 @@ import jwt from 'jsonwebtoken'; // Added for Whop
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import nodemailer from 'nodemailer';
 import { Resend } from 'resend';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 dotenv.config();
 
@@ -1045,6 +1050,18 @@ app.post('/webhooks/twilio/status', express.urlencoded({ extended: false }), val
         console.error('Status callback error:', err);
         res.sendStatus(500);
     }
+    // Serve static files from the React app (Vite build)
+    app.use(express.static(path.join(__dirname, '../dist')));
+
+    // SPA Catch-all: Route all other requests to index.html
+    app.get('*', (req, res) => {
+        // Skip API routes as they should have been handled above
+        if (req.path.startsWith('/api/') || req.path.startsWith('/webhooks/')) {
+            return res.status(404).json({ error: 'API endpoint not found' });
+        }
+        res.sendFile(path.join(__dirname, '../dist/index.html'));
+    });
+
 });
 
 app.listen(port, '0.0.0.0', () => {
