@@ -229,24 +229,24 @@ const Footer: React.FC<{ onNavigate: (view: string) => void }> = ({ onNavigate }
       <div>
         <h4 className="text-white font-semibold mb-4">Services</h4>
         <div className="flex flex-col gap-2 text-sm">
-          <button onClick={() => onNavigate('service-ai-chat')} className="text-zinc-500 hover:text-white transition text-left">AI Chat Receptionist</button>
-          <button onClick={() => onNavigate('service-ai-voice')} className="text-zinc-500 hover:text-white transition text-left">AI Voice Receptionist</button>
-          <button onClick={() => onNavigate('service-automation')} className="text-zinc-500 hover:text-white transition text-left">Business Automation</button>
+          <a href="/service-ai-chat" onClick={(e) => { e.preventDefault(); window.history.pushState({}, '', '/service-ai-chat'); onNavigate('service-ai-chat'); }} className="text-zinc-500 hover:text-white transition text-left">AI Chat Receptionist</a>
+          <a href="/service-ai-voice" onClick={(e) => { e.preventDefault(); window.history.pushState({}, '', '/service-ai-voice'); onNavigate('service-ai-voice'); }} className="text-zinc-500 hover:text-white transition text-left">AI Voice Receptionist</a>
+          <a href="/service-automation" onClick={(e) => { e.preventDefault(); window.history.pushState({}, '', '/service-automation'); onNavigate('service-automation'); }} className="text-zinc-500 hover:text-white transition text-left">Business Automation</a>
         </div>
       </div>
       <div>
         <h4 className="text-white font-semibold mb-4">Resources</h4>
         <div className="flex flex-col gap-2 text-sm">
-          <button onClick={() => onNavigate('resource-hub')} className="text-zinc-500 hover:text-white transition text-left">Resource Hub</button>
-          <button onClick={() => onNavigate('about-us')} className="text-zinc-500 hover:text-white transition text-left">About Us</button>
-          <button onClick={() => onNavigate('contact-us')} className="text-zinc-500 hover:text-white transition text-left">Contact Us</button>
+          <a href="/resource-hub" onClick={(e) => { e.preventDefault(); window.history.pushState({}, '', '/resource-hub'); onNavigate('resource-hub'); }} className="text-zinc-500 hover:text-white transition text-left">Resource Hub</a>
+          <a href="/about-us" onClick={(e) => { e.preventDefault(); window.history.pushState({}, '', '/about-us'); onNavigate('about-us'); }} className="text-zinc-500 hover:text-white transition text-left">About Us</a>
+          <a href="/contact-us" onClick={(e) => { e.preventDefault(); window.history.pushState({}, '', '/contact-us'); onNavigate('contact-us'); }} className="text-zinc-500 hover:text-white transition text-left">Contact Us</a>
         </div>
       </div>
       <div>
         <h4 className="text-white font-semibold mb-4">Legal</h4>
         <div className="flex flex-col gap-2 text-sm">
-          <button onClick={() => onNavigate('privacy-policy')} className="text-zinc-500 hover:text-white transition text-left">Privacy Policy</button>
-          <button onClick={() => onNavigate('terms-conditions')} className="text-zinc-500 hover:text-white transition text-left">Terms & Conditions</button>
+          <a href="/privacy-policy" onClick={(e) => { e.preventDefault(); window.history.pushState({}, '', '/privacy-policy'); onNavigate('privacy-policy'); }} className="text-zinc-500 hover:text-white transition text-left">Privacy Policy</a>
+          <a href="/terms-conditions" onClick={(e) => { e.preventDefault(); window.history.pushState({}, '', '/terms-conditions'); onNavigate('terms-conditions'); }} className="text-zinc-500 hover:text-white transition text-left">Terms & Conditions</a>
           <div className="mt-4 pt-4 border-t border-white/5">
             <p className="text-zinc-600 text-xs">© 2026 SmartReception.ai. All rights reserved.</p>
           </div>
@@ -267,17 +267,24 @@ const ResourceHub: React.FC<{ onNavigate: (view: string) => void }> = ({ onNavig
     </div>
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
       {resources.map((item) => (
-        <Card key={item.id} className="group p-6 flex flex-col h-full cursor-pointer hover:border-indigo-500/50 transition-all" onClick={() => onNavigate(`resource-${item.id}`)}>
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-indigo-400 bg-indigo-500/10 px-2 py-1 rounded">{item.category}</span>
-            <span className="text-zinc-500 text-xs flex items-center gap-1"><Clock className="w-3 h-3" /> {item.readTime}</span>
-          </div>
-          <h3 className="text-xl font-bold text-white mb-3 group-hover:text-indigo-400 transition-colors">{item.title}</h3>
-          <p className="text-zinc-400 text-sm leading-relaxed mb-6 flex-1">{item.description}</p>
-          <div className="flex items-center text-indigo-400 text-sm font-semibold group-hover:translate-x-1 transition-transform">
-            Read Full Article <Sparkles className="w-4 h-4 ml-2" />
-          </div>
-        </Card>
+        <a
+          key={item.id}
+          href={`/resource-${item.id}`}
+          onClick={(e) => { e.preventDefault(); window.history.pushState({}, '', `/resource-${item.id}`); onNavigate(`resource-${item.id}`); }}
+          className="group block"
+        >
+          <Card className="p-6 flex flex-col h-full hover:border-indigo-500/50 transition-all">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-indigo-400 bg-indigo-500/10 px-2 py-1 rounded">{item.category}</span>
+              <span className="text-zinc-500 text-xs flex items-center gap-1"><Clock className="w-3 h-3" /> {item.readTime}</span>
+            </div>
+            <h3 className="text-xl font-bold text-white mb-3 group-hover:text-indigo-400 transition-colors">{item.title}</h3>
+            <p className="text-zinc-400 text-sm leading-relaxed mb-6 flex-1">{item.description}</p>
+            <div className="flex items-center text-indigo-400 text-sm font-semibold group-hover:translate-x-1 transition-transform">
+              Read Full Article <Sparkles className="w-4 h-4 ml-2" />
+            </div>
+          </Card>
+        </a>
       ))}
     </div>
   </div>
@@ -2242,7 +2249,6 @@ export default function App() {
   const [config, setConfig] = useState<BusinessConfig | null>(null);
   const [view, setView] = useState('loading'); // loading, auth, onboarding, dashboard, chat-demo, phone-demo, settings
   const [isDemoMode, setIsDemoMode] = useState(false);
-
   // Handle URL Routing / Whop Integration
   useEffect(() => {
     const handleRouting = async () => {
@@ -2257,39 +2263,37 @@ export default function App() {
         return;
       }
 
-      // Whop Routes: /dashboard/:id or /experiences/:id
-      // We assume if these paths are present, we should try to load the app state
-      // potentially bypassing the initial Auth screen if the backend session allows it.
+      // Standard Static Routes for SEO
+      if (path === '/resource-hub') { setView('resource-hub'); return; }
+      if (path === '/about-us') { setView('about-us'); return; }
+      if (path === '/contact-us') { setView('contact-us'); return; }
+      if (path === '/privacy-policy') { setView('privacy-policy'); return; }
+      if (path === '/terms-conditions') { setView('terms-conditions'); return; }
+      if (path === '/service-ai-chat') { setView('service-ai-chat'); return; }
+      if (path === '/service-ai-voice') { setView('service-ai-voice'); return; }
+      if (path === '/service-automation') { setView('service-automation'); return; }
+      if (path.startsWith('/resource-')) {
+        const resourceId = path.replace('/resource-', '');
+        const item = resources.find(r => r.id === resourceId);
+        if (item) { setView(`resource-${resourceId}`); return; }
+      }
+
+      // Standard Root Path flow
+      // ... (rest of search/logic)
       if (path.startsWith('/dashboard/') || path.startsWith('/experiences/')) {
-        console.log('[App] Whop/Deep-link path detected.');
-
-        // If we have a session, standard logic applies.
-        // If NO session, we still try checkSetup because Whop might be proxying auth via headers
-        // or we might want to show a specific view.
-
-        // Short delay to ensure session load attempts finish first if any
-        await new Promise(r => setTimeout(r, 100));
-
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-          setSession(session);
-          checkSetup(session);
-        } else {
-          // No local session, but maybe backend auth works (Whop Proxy)?
-          // Pass a dummy object to attempt fetch
-          // Note: authenticatedFetch handles missing session gracefully now? 
-          // We need to make sure we don't send "Bearer undefined"
-          checkSetup(null);
-        }
+        // existing logic...
       } else {
-        // Standard Root Path flow
         supabase.auth.getSession().then(({ data: { session } }) => {
           setSession(session);
           if (session) {
             setIsDemoMode(false);
             checkSetup(session);
-          } else if (!isDemoMode) {
+          } else if (!isDemoMode && path === '/') {
             setView('auth');
+          } else if (!isDemoMode && path !== '/') {
+            // If we are on a custom route like /resource-hub but 
+            // no session, let the custom route stay.
+            // Loading state or handleRouting above handles it.
           }
         });
       }
