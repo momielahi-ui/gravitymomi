@@ -1,9 +1,7 @@
 {
-    "cleanUrls": true,
-    "trailingSlash": false,
     "rewrites": [
         {
-            "source": "/(.*)",
+            "source": "/((?!api/|webhooks/|assets/|favicon|google|ads\\.txt|sitemap|robots).*)",
             "destination": "/index.html"
         }
     ]
