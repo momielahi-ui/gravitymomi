@@ -52,12 +52,124 @@ const Badge: React.FC<BadgeProps> = ({ children, color = 'blue' }) => {
 
 // --- Auth Component ---
 
+// --- Static Information Pages ---
+
+const PrivacyPolicy: React.FC = () => (
+  <div className="max-w-4xl mx-auto py-12 px-6 text-slate-300 space-y-8 animate-in fade-in duration-700">
+    <h1 className="text-4xl font-bold text-white mb-8">Privacy Policy</h1>
+    <section className="space-y-4">
+      <h2 className="text-2xl font-semibold text-white">1. Information We Collect</h2>
+      <p>Smareceptionai.xyz collects minimal data required to provide our AI reception services. This includes your business name, email address, and configuration settings for your AI assistant.</p>
+    </section>
+    <section className="space-y-4">
+      <h2 className="text-2xl font-semibold text-white">2. GDPR & CCPA Compliance</h2>
+      <p>We respect your privacy rights under GDPR and CCPA. You have the right to access, rectify, or delete your personal data. We do not sell your personal information to third parties.</p>
+    </section>
+    <section className="space-y-4">
+      <h2 className="text-2xl font-semibold text-white">3. Cookies</h2>
+      <p>We use essential cookies to maintain your session and ensure the security of your account. By using our site, you consent to these cookies.</p>
+    </section>
+    <section className="space-y-4">
+      <h2 className="text-2xl font-semibold text-white">4. Contact Us</h2>
+      <p>If you have questions about this policy, contact us at support@smarteceptionai.xyz.</p>
+    </section>
+  </div>
+);
+
+const TermsAndConditions: React.FC = () => (
+  <div className="max-w-4xl mx-auto py-12 px-6 text-slate-300 space-y-8 animate-in fade-in duration-700">
+    <h1 className="text-4xl font-bold text-white mb-8">Terms & Conditions</h1>
+    <section className="space-y-4">
+      <h2 className="text-2xl font-semibold text-white">1. Acceptance of Terms</h2>
+      <p>By accessing SmartReception.ai, you agree to be bound by these terms. Our service provides an AI-driven receptionist for business use.</p>
+    </section>
+    <section className="space-y-4">
+      <h2 className="text-2xl font-semibold text-white">2. Use of Service</h2>
+      <p>You agree not to use the service for any illegal or unauthorized purpose. You are responsible for maintaining the confidentiality of your account.</p>
+    </section>
+    <section className="space-y-4">
+      <h2 className="text-2xl font-semibold text-white">3. Limitation of Liability</h2>
+      <p>SmartReception.ai shall not be liable for any indirect, incidental, or consequential damages resulting from the use of our services.</p>
+    </section>
+  </div>
+);
+
+const AboutUs: React.FC = () => (
+  <div className="max-w-4xl mx-auto py-12 px-6 text-slate-300 space-y-8 animate-in fade-in duration-700">
+    <h1 className="text-4xl font-bold text-white mb-8">About SmartReception.ai</h1>
+    <p className="text-lg leading-relaxed">
+      At SmartReception.ai, we are redefining how businesses handle customer interactions. Our mission is to provide every business with a high-end, intelligent AI workforce that ensures no call or message goes unanswered.
+    </p>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">
+      <Card className="p-6">
+        <h3 className="text-xl font-bold text-white mb-2">Our Vision</h3>
+        <p>To be the world's leading provider of AI-driven customer service solutions, making premium reception services accessible to businesses of all sizes.</p>
+      </Card>
+      <Card className="p-6">
+        <h3 className="text-xl font-bold text-white mb-2">Our Technology</h3>
+        <p>We leverage cutting-edge LLMs and voice synthesis to create AI personas that are not just efficient, but also warm and professional.</p>
+      </Card>
+    </div>
+  </div>
+);
+
+const ContactUs: React.FC = () => (
+  <div className="max-w-4xl mx-auto py-12 px-6 text-slate-300 space-y-8 animate-in fade-in duration-700">
+    <h1 className="text-4xl font-bold text-white mb-8">Contact Us</h1>
+    <p className="text-lg">Need help or have questions? Our team is here to support you.</p>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mt-8">
+      <div className="space-y-6">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-indigo-500/10 rounded-2xl">
+            <Mail className="w-6 h-6 text-indigo-400" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-white">Email Us</p>
+            <p className="text-zinc-400">support@smarteceptionai.xyz</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-indigo-500/10 rounded-2xl">
+            <Globe className="w-6 h-6 text-indigo-400" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-white">Headquarters</p>
+            <p className="text-zinc-400">Tech Hub, Digital Valley</p>
+          </div>
+        </div>
+      </div>
+      <Card className="p-6 bg-indigo-500/5 border-indigo-500/10">
+        <p className="text-sm italic text-zinc-400">"We aim to respond to all inquiries within 24 business hours. Thank you for choosing SmartReception.ai."</p>
+      </Card>
+    </div>
+  </div>
+);
+
+const Footer: React.FC<{ onNavigate: (view: string) => void }> = ({ onNavigate }) => (
+  <footer className="w-full py-12 border-t border-white/5 mt-auto relative z-10">
+    <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8">
+      <div className="flex items-center gap-2">
+        <img src={logo} alt="Logo" className="w-6 h-6 object-contain" />
+        <span className="text-white font-semibold">SmartReception.ai</span>
+      </div>
+      <div className="flex flex-wrap justify-center gap-6 text-sm">
+        <button onClick={() => onNavigate('about-us')} className="text-zinc-500 hover:text-white transition">About Us</button>
+        <button onClick={() => onNavigate('contact-us')} className="text-zinc-500 hover:text-white transition">Contact Us</button>
+        <button onClick={() => onNavigate('privacy-policy')} className="text-zinc-500 hover:text-white transition">Privacy Policy</button>
+        <button onClick={() => onNavigate('terms-conditions')} className="text-zinc-500 hover:text-white transition">Terms & Conditions</button>
+      </div>
+      <p className="text-zinc-600 text-xs">© 2026 SmartReception.ai. All rights reserved.</p>
+    </div>
+  </footer>
+);
+
 interface AuthProps {
   onAuthSuccess: () => void;
   onTryDemo: () => void;
+  onNavigate: (view: string) => void;
 }
 
-const Auth: React.FC<AuthProps> = ({ onAuthSuccess, onTryDemo }) => {
+const Auth: React.FC<AuthProps> = ({ onAuthSuccess, onTryDemo, onNavigate }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -92,105 +204,108 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess, onTryDemo }) => {
   };
 
   return (
-    <div className="min-h-screen grid place-items-center p-4 relative overflow-hidden">
+    <div className="min-h-screen flex flex-col p-4 relative overflow-hidden">
       {/* Background Ambience */}
       <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-indigo-500/10 blur-[120px] rounded-full mix-blend-screen animate-pulse-slow"></div>
       <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-blue-500/10 blur-[120px] rounded-full mix-blend-screen animate-pulse-slow" style={{ animationDelay: '2s' }}></div>
 
-      <div className="w-full max-w-md relative z-10">
-        <div className="text-center mb-10 space-y-4">
-          <div className="w-24 h-24 bg-black/40 backdrop-blur-2xl border border-white/10 rounded-[32px] flex items-center justify-center mx-auto shadow-2xl shadow-indigo-500/10 animate-float overflow-hidden p-4">
-            <img src={logo} alt="SmartReception Logo" className="w-full h-full object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]" />
-          </div>
-          <div>
-            <h1 className="text-4xl font-semibold tracking-tight text-white drop-shadow-sm">SmartReception.ai</h1>
-            <p className="text-titanium text-lg font-light tracking-wide mt-2">Your AI workforce, perfectly managed.</p>
-          </div>
-        </div>
-
-        <Card className="!p-8 backdrop-blur-3xl bg-black/40 border-white/10">
-          <form onSubmit={handleAuth} className="space-y-6">
+      <div className="flex-1 grid place-items-center w-full max-w-md mx-auto relative z-10 pt-12 pb-24">
+        <div className="w-full">
+          <div className="text-center mb-10 space-y-4">
+            <div className="w-24 h-24 bg-black/40 backdrop-blur-2xl border border-white/10 rounded-[32px] flex items-center justify-center mx-auto shadow-2xl shadow-indigo-500/10 animate-float overflow-hidden p-4">
+              <img src={logo} alt="SmartReception Logo" className="w-full h-full object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]" />
+            </div>
             <div>
-              <label className="block text-xs font-semibold text-titanium uppercase tracking-wider mb-2 ml-1">Email Address</label>
-              <div className="relative group">
-                <input
-                  type="email"
-                  required
-                  autoComplete="off"
-                  className="w-full input-apple pl-11"
-                  placeholder="name@company.com"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                />
-                <Mail className="absolute left-4 top-3.5 w-5 h-5 text-zinc-500 group-focus-within:text-white transition-colors duration-300" />
-              </div>
+              <h1 className="text-4xl font-semibold tracking-tight text-white drop-shadow-sm">SmartReception.ai</h1>
+              <p className="text-titanium text-lg font-light tracking-wide mt-2">Your AI workforce, perfectly managed.</p>
             </div>
+          </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-titanium uppercase tracking-wider mb-2 ml-1">Password</label>
-              <div className="relative group">
-                <input
-                  type="password"
-                  required
-                  className="w-full input-apple pl-11"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                />
-                <Lock className="absolute left-4 top-3.5 w-5 h-5 text-zinc-500 group-focus-within:text-white transition-colors duration-300" />
-              </div>
-            </div>
-
-            {error && (
-              <div className="p-3 bg-red-500/10 border border-red-500/10 rounded-2xl text-sm text-red-300 text-center font-medium">
-                {error}
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full btn-apple bg-white text-black hover:bg-zinc-200 py-4 text-sm font-semibold shadow-lg shadow-white/5"
-            >
-              {loading ? 'Processing...' : (isSignUp ? 'Create Account' : 'Sign In')}
-            </button>
-
-            <div className="relative my-6">
-              <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/5"></div></div>
-              <div className="relative flex justify-center text-xs uppercase tracking-widest"><span className="px-3 bg-black/40 text-zinc-600 backdrop-blur-xl">Or</span></div>
-            </div>
-
-            <button
-              type="button"
-              onClick={onTryDemo}
-              className="w-full btn-apple bg-zinc-900/50 hover:bg-zinc-800 text-white border border-white/10 py-4 flex items-center justify-center gap-2 group text-sm"
-            >
-              <Sparkles className="w-4 h-4 text-indigo-400 group-hover:text-indigo-300" />
-              Try Demo Mode
-            </button>
-
-            <div className="mt-8 pt-6 border-t border-white/5 text-center">
-              <div className="flex flex-col items-center gap-2 opacity-50 hover:opacity-100 transition-opacity duration-300">
-                <div className="flex items-center gap-2 bg-black/30 px-3 py-1 rounded-full border border-white/5">
-                  <div className={`w-1.5 h-1.5 rounded-full ${API_URL.startsWith('https') ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-red-500 animate-pulse'}`} />
-                  <span className="text-[10px] text-zinc-400 font-mono tracking-wider">
-                    {API_URL.startsWith('https') ? 'SECURE CONNECTION' : 'INSECURE CONNECTION'}
-                  </span>
+          <Card className="!p-8 backdrop-blur-3xl bg-black/40 border-white/10">
+            <form onSubmit={handleAuth} className="space-y-6">
+              <div>
+                <label className="block text-xs font-semibold text-titanium uppercase tracking-wider mb-2 ml-1">Email Address</label>
+                <div className="relative group">
+                  <input
+                    type="email"
+                    required
+                    autoComplete="off"
+                    className="w-full input-apple pl-11"
+                    placeholder="name@company.com"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                  />
+                  <Mail className="absolute left-4 top-3.5 w-5 h-5 text-zinc-500 group-focus-within:text-white transition-colors duration-300" />
                 </div>
               </div>
-            </div>
-          </form>
 
-          <div className="mt-6 text-center">
-            <button
-              onClick={() => setIsSignUp(!isSignUp)}
-              className="text-sm text-titanium hover:text-white transition-colors duration-300 font-medium"
-            >
-              {isSignUp ? 'Already have an account? Sign In' : "Don't have an account? Sign Up"}
-            </button>
-          </div>
-        </Card>
+              <div>
+                <label className="block text-xs font-semibold text-titanium uppercase tracking-wider mb-2 ml-1">Password</label>
+                <div className="relative group">
+                  <input
+                    type="password"
+                    required
+                    className="w-full input-apple pl-11"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                  />
+                  <Lock className="absolute left-4 top-3.5 w-5 h-5 text-zinc-500 group-focus-within:text-white transition-colors duration-300" />
+                </div>
+              </div>
+
+              {error && (
+                <div className="p-3 bg-red-500/10 border border-red-500/10 rounded-2xl text-sm text-red-300 text-center font-medium">
+                  {error}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full btn-apple bg-white text-black hover:bg-zinc-200 py-4 text-sm font-semibold shadow-lg shadow-white/5"
+              >
+                {loading ? 'Processing...' : (isSignUp ? 'Create Account' : 'Sign In')}
+              </button>
+
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/5"></div></div>
+                <div className="relative flex justify-center text-xs uppercase tracking-widest"><span className="px-3 bg-black/40 text-zinc-600 backdrop-blur-xl">Or</span></div>
+              </div>
+
+              <button
+                type="button"
+                onClick={onTryDemo}
+                className="w-full btn-apple bg-zinc-900/50 hover:bg-zinc-800 text-white border border-white/10 py-4 flex items-center justify-center gap-2 group text-sm"
+              >
+                <Sparkles className="w-4 h-4 text-indigo-400 group-hover:text-indigo-300" />
+                Try Demo Mode
+              </button>
+
+              <div className="mt-8 pt-6 border-t border-white/5 text-center">
+                <div className="flex flex-col items-center gap-2 opacity-50 hover:opacity-100 transition-opacity duration-300">
+                  <div className="flex items-center gap-2 bg-black/30 px-3 py-1 rounded-full border border-white/5">
+                    <div className={`w-1.5 h-1.5 rounded-full ${API_URL.startsWith('https') ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-red-500 animate-pulse'}`} />
+                    <span className="text-[10px] text-zinc-400 font-mono tracking-wider">
+                      {API_URL.startsWith('https') ? 'SECURE CONNECTION' : 'INSECURE CONNECTION'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </form>
+
+            <div className="mt-6 text-center">
+              <button
+                onClick={() => setIsSignUp(!isSignUp)}
+                className="text-sm text-titanium hover:text-white transition-colors duration-300 font-medium"
+              >
+                {isSignUp ? 'Already have an account? Sign In' : "Don't have an account? Sign Up"}
+              </button>
+            </div>
+          </Card>
+        </div>
       </div>
+      <Footer onNavigate={onNavigate} />
     </div>
   );
 };
@@ -1961,8 +2076,11 @@ const AppShell: React.FC<AppShellProps> = ({ children, onLogout, user, onViewCha
         />
       )}
 
-      <main className="flex-1 p-4 md:p-8 overflow-x-hidden">
-        {children}
+      <main className="flex-1 flex flex-col min-h-screen">
+        <div className="flex-1 p-4 md:p-8 overflow-x-hidden">
+          {children}
+        </div>
+        <Footer onNavigate={onViewChange} />
       </main>
     </div>
   );
@@ -2136,8 +2254,13 @@ export default function App() {
     );
   }
 
-  if (view === 'auth') return <Auth onAuthSuccess={() => { }} onTryDemo={handleTryDemo} />;
+  if (view === 'auth') return <Auth onAuthSuccess={() => { }} onTryDemo={handleTryDemo} onNavigate={setView} />;
   if (view === 'onboarding') return <Onboarding onComplete={(cfg: BusinessConfig) => { setConfig(cfg); setView('dashboard'); }} isDemoMode={isDemoMode} />;
+
+  if (view === 'privacy-policy') return <AppShell onLogout={handleLogout} user={isDemoMode ? { email: 'Demo User' } : session?.user} onViewChange={setView}><PrivacyPolicy /></AppShell>;
+  if (view === 'terms-conditions') return <AppShell onLogout={handleLogout} user={isDemoMode ? { email: 'Demo User' } : session?.user} onViewChange={setView}><TermsAndConditions /></AppShell>;
+  if (view === 'about-us') return <AppShell onLogout={handleLogout} user={isDemoMode ? { email: 'Demo User' } : session?.user} onViewChange={setView}><AboutUs /></AppShell>;
+  if (view === 'contact-us') return <AppShell onLogout={handleLogout} user={isDemoMode ? { email: 'Demo User' } : session?.user} onViewChange={setView}><ContactUs /></AppShell>;
 
   // Validation
   if (!config && !isDemoMode && view !== 'loading') {
