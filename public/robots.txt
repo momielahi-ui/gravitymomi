@@ -3,4 +3,4 @@ Allow: /
 Disallow: /admin
 Disallow: /api/
 
-Sitemap: https://smarteceptionai.xyz/sitemap.xml
+Sitemap: https://smartreceptionai.xyz/sitemap.xml
