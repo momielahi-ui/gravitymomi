@@ -345,7 +345,13 @@ app.post('/api/chat', async (req, res) => {
       2. Answer strictly based on the business details.
       3. If asked about something not listed, say you don't know but can take a message.
       4. Be ${config.tone || 'professional'}.
-      5. Keep responses concise (under 50 words) suitable for a chat interface.
+
+      VOICE OPTIMIZATION RULES (CRITICAL):
+      - Use "phonetic writing" for realism. Start some sentences with "Mhm,", "Uh-huh,", or "Oh!".
+      - STRICT CONTRACTIONS: Never use "I am", "We are", or "Do not". ALWAYS use "I'm", "We're", and "Don't".
+      - NATURAL PACING: Use ellipses "..." for natural hesitations.
+      - SHORT BURSTS: Keep responses under 15 words.
+      - UPSPEAK: End questions with "?" for rising intonation.
       `;
 
         // Validate History for Gemini (Must start with User)
@@ -416,82 +422,54 @@ app.post('/api/chat', async (req, res) => {
     }
 });
 
-// --- ElevenLabs TTS Proxy ---
+// --- Kokoro-82M TTS Proxy ---
+import { spawn } from 'child_process';
+
 app.all('/api/voice/tts', async (req, res) => {
     const text = req.method === 'GET' ? req.query.text : req.body.text;
-    const isDemo = req.method === 'GET' ? req.query.isDemo === 'true' : req.body.isDemo;
-    const businessId = req.method === 'GET' ? req.query.businessId : req.body.businessId;
 
     if (!text) return res.status(400).json({ error: 'No text provided' });
-    if (!ELEVENLABS_API_KEY) {
-        console.warn('[TTS] ELEVENLABS_API_KEY missing, using fallback');
-        return res.status(503).json({ error: 'TTS service not configured' });
-    }
 
     try {
-        let business = null;
-        if (!isDemo && businessId) {
-            // Check usage for paid plans
-            const supabase = createClient(supabaseUrl, process.env.SUPABASE_SERVICE_ROLE_KEY || supabaseKey);
-            const { data } = await supabase.from('businesses').select('*').eq('id', businessId).single();
-            business = data;
+        console.log(`[TTS] Generating Kokoro speech for: "${text.substring(0, 30)}..."`);
 
-            if (business) {
-                const used = business.minutes_used || 0;
-                const limit = business.minutes_limit || 10;
-                if (used >= limit) {
-                    return res.status(403).json({ error: 'Usage limit reached' });
-                }
-            }
-        }
+        // Spawn Python process for Kokoro TTS
+        // We use 'python' or 'python3' depending on the environment. 
+        // Based on previous checks, 'python' works.
+        const pythonProcess = spawn('python', [path.join(__dirname, '..', 'kokoro_tts.py')]);
 
-        // Call ElevenLabs
-        console.log(`[TTS] Generating speech for: "${text.substring(0, 30)}..."`);
-        const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE_ID}/stream`, {
-            method: 'POST',
-            headers: {
-                'xi-api-key': ELEVENLABS_API_KEY,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                text,
-                model_id: 'eleven_turbo_v2_5', // Free tier compatible model
-                voice_settings: { stability: 0.5, similarity_boost: 0.5 }
-            })
+        // Send text to Python via stdin
+        pythonProcess.stdin.write(text);
+        pythonProcess.stdin.end();
+
+        // Stream audio back to client
+        // Kokoro outputs raw PCM (float32 at 24kHz by default)
+        // We should send it as audio/wav or raw. 
+        // For simplicity and since the frontend handles it, we'll send it as raw bytes.
+        res.setHeader('Content-Type', 'audio/pcm');
+
+        pythonProcess.stdout.pipe(res);
+
+        pythonProcess.stderr.on('data', (data) => {
+            console.error(`[TTS Python Error] ${data}`);
         });
 
-        if (!response.ok) {
-            const errBody = await response.text();
-            console.error('[TTS] ElevenLabs Error:', errBody);
-            throw new Error(`ElevenLabs API returned ${response.status}`);
-        }
-
-        // Update usage in background
-        if (!isDemo && business) {
-            const estimatedMins = charsToMinutes(text.length);
-            const supabase = createClient(supabaseUrl, process.env.SUPABASE_SERVICE_ROLE_KEY || supabaseKey);
-            supabase.from('businesses')
-                .update({ minutes_used: (business.minutes_used || 0) + estimatedMins })
-                .eq('id', business.id)
-                .then(({ error }) => {
-                    if (error) console.error('[TTS] Usage Update Error:', error);
-                });
-        }
-
-        // Stream the audio back to the client
-        res.setHeader('Content-Type', 'audio/mpeg');
-        // Node 18 fetch response.body is a ReadableStream (Web API), pipeable in standard way
-        const reader = response.body.getReader();
-        while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-            res.write(value);
-        }
-        res.end();
+        pythonProcess.on('close', (code) => {
+            if (code !== 0) {
+                console.error(`[TTS] Python process exited with code ${code}`);
+                if (!res.headersSent) {
+                    res.status(500).json({ error: 'TTS Generation failed' });
+                }
+            } else {
+                console.log('[TTS] Generation complete');
+            }
+        });
 
     } catch (err) {
         console.error('[TTS] Proxy Error:', err);
-        res.status(500).json({ error: 'TTS Generation failed' });
+        if (!res.headersSent) {
+            res.status(500).json({ error: 'TTS Generation failed' });
+        }
     }
 });
 
