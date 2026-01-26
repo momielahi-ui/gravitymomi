@@ -1723,9 +1723,10 @@ const VapiCallButton: React.FC<{ config: BusinessConfig }> = ({ config }) => {
           messages: [
             {
               role: "system",
-              content: `You are the receptionist for Smart Reception AI. Your tone is 'Breezy Professional.' Speak in short, punchy fragments. Use contractions (I'm, We're, Don't) 100% of the time. If you don't know something, say 'Hmm, good question, let me find out' instead of 'I am sorry, I do not have that information.'`
+              content: `You are the receptionist for Smart Reception AI. Business Context: ${config.services}. Tone: 'Breezy Professional.' Speak in short, punchy fragments. Use contractions (I'm, We're, Don't) 100% of the time. If you don't know something, say 'Hmm, good question, let me find out' instead of 'I am sorry, I do not have that information.'`
             }
-          ]
+          ],
+          emotionRecognitionEnabled: true
         },
         voice: {
           provider: "cartesia",
@@ -1747,17 +1748,6 @@ const VapiCallButton: React.FC<{ config: BusinessConfig }> = ({ config }) => {
           onPunctuationSeconds: 0.1,
           onNoPunctuationSeconds: 1.5,
           onNumberSeconds: 0.5
-        },
-        model: {
-          provider: "openai",
-          model: "gpt-4o",
-          messages: [
-            {
-              role: "system",
-              content: `You are the receptionist for Smart Reception AI. Business Context: ${config.services}. Tone: 'Breezy Professional.' Speak in short, punchy fragments. Use contractions (I'm, We're, Don't) 100% of the time. If you don't know something, say 'Hmm, good question, let me find out' instead of 'I am sorry, I do not have that information.'`
-            }
-          ],
-          emotionRecognitionEnabled: true
         }
       });
     }
