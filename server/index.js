@@ -603,6 +603,66 @@ app.get('/api/twilio/status', async (req, res) => {
 });
 
 
+// ===== VAPI INTEGRATION =====
+
+app.post('/api/vapi-webhook', async (req, res) => {
+    console.log('[Vapi Webhook] Received event:', req.body.message?.type || 'unknown');
+
+    try {
+        const { message } = req.body;
+
+        // Vapi sends various message types: 
+        // assistant-request, function-call, end-of-call-report, etc.
+        if (message.type === 'assistant-request') {
+            // You can dynamically return an assistant configuration here
+            return res.json({
+                assistant: {
+                    name: "Smart Reception Assistant",
+                    model: {
+                        provider: "openai",
+                        model: "gpt-4o",
+                        messages: [
+                            {
+                                role: "system",
+                                content: "You are the receptionist for Smart Reception AI. Your tone is 'Breezy Professional.' Speak in short, punchy fragments. Use contractions (I'm, We're, Don't) 100% of the time. If you don't know something, say 'Hmm, good question, let me find out' instead of 'I am sorry, I do not have that information.'"
+                            }
+                        ]
+                    },
+                    voice: {
+                        provider: "cartesia",
+                        voiceId: "694f9389-aac1-45b6-b726-9d9369183238",
+                        model: "sonic-english"
+                    },
+                    transcriber: {
+                        provider: "deepgram",
+                        model: "nova-2",
+                        language: "en"
+                    },
+                    serverUrl: "https://smartreceptionai.xyz/api/vapi-webhook",
+                    endCallFunctionEnabled: true
+                }
+            });
+        }
+
+        if (message.type === 'function-call') {
+            const { name, parameters } = message.functionCall;
+            console.log(`[Vapi] Function Call: ${name}`, parameters);
+
+            // Handle your custom functions here (e.g., booking appointments)
+            if (name === 'bookAppointment') {
+                return res.json({ success: true, message: 'Appointment booked!' });
+            }
+        }
+
+        // Default response for other events
+        res.status(200).json({ received: true });
+
+    } catch (error) {
+        console.error('[Vapi Webhook] Error:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
 // ===== BILLING & PAYMENTS =====
 
 // GET /api/billing/plans

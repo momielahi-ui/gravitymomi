@@ -13,6 +13,9 @@ import type { ResourceContent } from './resourceData';
 // In production, set VITE_API_URL in your hosting provider (e.g. Vercel)
 const API_URL = import.meta.env.VITE_API_URL || 'https://gravitymomi.onrender.com/api';
 
+import Vapi from '@vapi-ai/web';
+const vapi = new Vapi(import.meta.env.VITE_VAPI_PUBLIC_KEY || 'your-vapi-public-key');
+
 // --- Shared Components ---
 
 interface CardProps {
@@ -1684,6 +1687,114 @@ const VoiceDemoView: React.FC<VoiceDemoViewProps> = ({ config, isDemoMode }) => 
   );
 };
 
+const VapiCallButton: React.FC<{ config: BusinessConfig }> = ({ config }) => {
+  const [isCalling, setIsCalling] = useState(false);
+  const [callStatus, setCallStatus] = useState<string | null>(null);
+
+  useEffect(() => {
+    vapi.on('call-start', () => {
+      setIsCalling(true);
+      setCallStatus('Connected');
+    });
+    vapi.on('call-end', () => {
+      setIsCalling(false);
+      setCallStatus(null);
+    });
+    vapi.on('error', (e) => {
+      console.error('Vapi Error:', e);
+      setIsCalling(false);
+      setCallStatus('Error');
+    });
+    return () => {
+      vapi.removeAllListeners();
+    };
+  }, []);
+
+  const handleCall = async () => {
+    if (isCalling) {
+      vapi.stop();
+    } else {
+      setCallStatus('Initiating...');
+      vapi.start({
+        name: "Smart Reception Assistant",
+        model: {
+          provider: "openai",
+          model: "gpt-4o",
+          messages: [
+            {
+              role: "system",
+              content: `You are the receptionist for Smart Reception AI. Your tone is 'Breezy Professional.' Speak in short, punchy fragments. Use contractions (I'm, We're, Don't) 100% of the time. If you don't know something, say 'Hmm, good question, let me find out' instead of 'I am sorry, I do not have that information.'`
+            }
+          ]
+        },
+        voice: {
+          provider: "cartesia",
+          voiceId: "694f9389-aac1-45b6-b726-9d9369183238",
+          model: "sonic-english"
+        },
+        transcriber: {
+          provider: "deepgram",
+          model: "nova-2",
+          language: "en"
+        },
+        server: {
+          url: "https://smartreceptionai.xyz/api/vapi-webhook"
+        },
+        endCallFunctionEnabled: true,
+        fillerInjectionEnabled: true,
+        backchannelingEnabled: true,
+        transcriptionEndpointingPlan: {
+          onPunctuationSeconds: 0.1,
+          onNoPunctuationSeconds: 1.5,
+          onNumberSeconds: 0.5
+        },
+        model: {
+          provider: "openai",
+          model: "gpt-4o",
+          messages: [
+            {
+              role: "system",
+              content: `You are the receptionist for Smart Reception AI. Business Context: ${config.services}. Tone: 'Breezy Professional.' Speak in short, punchy fragments. Use contractions (I'm, We're, Don't) 100% of the time. If you don't know something, say 'Hmm, good question, let me find out' instead of 'I am sorry, I do not have that information.'`
+            }
+          ],
+          emotionRecognitionEnabled: true
+        }
+      });
+    }
+  };
+
+  return (
+    <Card
+      className={`p-6 group relative overflow-hidden transition-all duration-500 ${isCalling ? 'border-red-500/50 bg-red-500/5' : 'hover:border-purple-500/30'}`}
+      onClick={handleCall}
+    >
+      {isCalling && (
+        <div className="absolute top-4 right-4">
+          <div className="flex gap-1 h-3 items-center">
+            <div className="w-1 h-full bg-red-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+            <div className="w-1 h-full bg-red-500 rounded-full animate-bounce" style={{ animationDelay: '200ms' }} />
+            <div className="w-1 h-full bg-red-500 rounded-full animate-bounce" style={{ animationDelay: '400ms' }} />
+          </div>
+        </div>
+      )}
+      <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 transition duration-500 ${isCalling ? 'bg-red-500/20 group-hover:scale-110' : 'bg-gradient-to-br from-purple-500/20 to-indigo-500/20 group-hover:scale-110'}`}>
+        <PhoneOutgoing className={`w-7 h-7 ${isCalling ? 'text-red-400' : 'text-purple-400'}`} />
+      </div>
+      <h3 className="text-xl font-semibold text-white mb-2 tracking-tight">
+        {isCalling ? 'End Voice Call' : 'Vapi Live Call'}
+      </h3>
+      <p className="text-titanium text-sm leading-relaxed mb-4">
+        {isCalling ? 'Call in progress. Speak now.' : 'Talk with our AI receptionist in real-time (latency < 200ms).'}
+      </p>
+      {callStatus && (
+        <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded ${isCalling ? 'bg-red-500/10 text-red-400' : 'bg-purple-500/10 text-purple-400'}`}>
+          {callStatus}
+        </span>
+      )}
+    </Card>
+  );
+};
+
 interface DashboardViewProps {
   config: BusinessConfig;
   onNavigate: (view: string) => void;
@@ -1771,6 +1882,8 @@ const DashboardView: React.FC<DashboardViewProps> = ({ config, onNavigate, isDem
           <h3 className="text-xl font-semibold text-white mb-2 tracking-tight">Connect Twilio</h3>
           <p className="text-titanium text-sm leading-relaxed">Link your phone number to start receiving calls.</p>
         </Card>
+
+        <VapiCallButton config={config} />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
