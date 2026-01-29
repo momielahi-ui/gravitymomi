@@ -1687,7 +1687,7 @@ const VoiceDemoView: React.FC<VoiceDemoViewProps> = ({ config, isDemoMode }) => 
   );
 };
 
-const VapiCallButton: React.FC<{ config: BusinessConfig }> = ({ config }) => {
+const VapiCallButton: React.FC<{ config: BusinessConfig; isDemoMode?: boolean }> = ({ config, isDemoMode }) => {
   const [isCalling, setIsCalling] = useState(false);
   const [callStatus, setCallStatus] = useState<string | null>(null);
 
@@ -1716,14 +1716,14 @@ const VapiCallButton: React.FC<{ config: BusinessConfig }> = ({ config }) => {
     } else {
       setCallStatus('Initiating...');
       vapi.start({
-        name: "Smart Reception Assistant",
+        name: isDemoMode ? "Smart Reception Demo" : "Smart Reception Assistant",
         model: {
           provider: "openai",
           model: "gpt-4o",
           messages: [
             {
               role: "system",
-              content: `You are the receptionist for Smart Reception AI. Business Context: ${config.services}. Tone: 'Breezy Professional.' Speak in short, punchy fragments. Use contractions (I'm, We're, Don't) 100% of the time. If you don't know something, say 'Hmm, good question, let me find out' instead of 'I am sorry, I do not have that information.'`
+              content: `You are the receptionist for Smart Reception AI. Business Context: ${config.services || 'General Inquiry'}. Tone: 'Breezy Professional.' Speak in short, punchy fragments. Use contractions (I'm, We're, Don't) 100% of the time. If you don't know something, say 'Hmm, good question, let me find out' instead of 'I am sorry, I do not have that information.'`
             }
           ],
           emotionRecognitionEnabled: true
@@ -1771,16 +1771,23 @@ const VapiCallButton: React.FC<{ config: BusinessConfig }> = ({ config }) => {
         <PhoneOutgoing className={`w-7 h-7 ${isCalling ? 'text-red-400' : 'text-purple-400'}`} />
       </div>
       <h3 className="text-xl font-semibold text-white mb-2 tracking-tight">
-        {isCalling ? 'End Voice Call' : 'Vapi Live Call'}
+        {isCalling ? 'End Voice Call' : isDemoMode ? 'Demo Voice Call' : 'Vapi Live Call'}
       </h3>
       <p className="text-titanium text-sm leading-relaxed mb-4">
-        {isCalling ? 'Call in progress. Speak now.' : 'Talk with our AI receptionist in real-time (latency < 200ms).'}
+        {isCalling ? 'Call in progress. Speak now.' : isDemoMode ? 'Test the AI voice right now without a phone line.' : 'Talk with our AI receptionist in real-time (latency < 200ms).'}
       </p>
-      {callStatus && (
-        <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded ${isCalling ? 'bg-red-500/10 text-red-400' : 'bg-purple-500/10 text-purple-400'}`}>
-          {callStatus}
-        </span>
-      )}
+      <div className="flex items-center gap-2">
+        {callStatus && (
+          <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded ${isCalling ? 'bg-red-500/10 text-red-400' : 'bg-purple-500/10 text-purple-400'}`}>
+            {callStatus}
+          </span>
+        )}
+        {isDemoMode && !isCalling && (
+          <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded bg-amber-500/10 text-amber-400">
+            Preview
+          </span>
+        )}
+      </div>
     </Card>
   );
 };
@@ -1873,7 +1880,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({ config, onNavigate, isDem
           <p className="text-titanium text-sm leading-relaxed">Link your phone number to start receiving calls.</p>
         </Card>
 
-        <VapiCallButton config={config} />
+        <VapiCallButton config={config} isDemoMode={isDemoMode} />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

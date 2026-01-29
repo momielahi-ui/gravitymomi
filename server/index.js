@@ -347,11 +347,12 @@ app.post('/api/chat', async (req, res) => {
       4. Be ${config.tone || 'professional'}.
 
       VOICE OPTIMIZATION RULES (CRITICAL):
-      - Use "phonetic writing" for realism. Start some sentences with "Mhm,", "Uh-huh,", or "Oh!".
+      - USE FILLER WORDS: Start responses with "Mhm,", "So,", "Oh,", or "Got it," to sound like a real person thinking.
       - STRICT CONTRACTIONS: Never use "I am", "We are", or "Do not". ALWAYS use "I'm", "We're", and "Don't".
-      - NATURAL PACING: Use ellipses "..." for natural hesitations.
-      - SHORT BURSTS: Keep responses under 15 words.
-      - UPSPEAK: End questions with "?" for rising intonation.
+      - NATURAL PACING: Use ellipses "..." for natural pauses (e.g., "Let me see... oh, here it is.").
+      - SHORT BURSTS: Keep responses under 15 words. Avoid long robotic lists.
+      - VARIATION: Occasionally add "Umm," in the middle of a sentence if you're "looking something up".
+      - UPSPEAK: End questions with "?" and use "right?" or "yeah?" at the end of some statements for a friendly tone.
       `;
 
         // Validate History for Gemini (Must start with User)
@@ -422,8 +423,8 @@ app.post('/api/chat', async (req, res) => {
     }
 });
 
-// --- Kokoro-82M TTS Proxy ---
-import { spawn } from 'child_process';
+// --- Kokoro-82M TTS Proxy (Optimized with persistent server) ---
+import fetch from 'node-fetch';
 
 app.all('/api/voice/tts', async (req, res) => {
     const text = req.method === 'GET' ? req.query.text : req.body.text;
@@ -431,47 +432,35 @@ app.all('/api/voice/tts', async (req, res) => {
     if (!text) return res.status(400).json({ error: 'No text provided' });
 
     try {
-        console.log(`[TTS] Generating Kokoro speech for: "${text.substring(0, 30)}..."`);
+        console.log(`[TTS] Requesting Kokoro speech for: "${text.substring(0, 30)}..."`);
 
-        // Spawn Python process for Kokoro TTS
-        // We use 'python' or 'python3' depending on the environment. 
-        // Based on previous checks, 'python' works.
-        const pythonProcess = spawn('python', [path.join(__dirname, '..', 'kokoro_tts.py')]);
-
-        // Send text to Python via stdin
-        pythonProcess.stdin.write(text);
-        pythonProcess.stdin.end();
-
-        // Stream audio back to client
-        // Kokoro outputs raw PCM (float32 at 24kHz by default)
-        // We should send it as audio/wav or raw. 
-        // For simplicity and since the frontend handles it, we'll send it as raw bytes.
-        res.setHeader('Content-Type', 'audio/pcm');
-
-        pythonProcess.stdout.pipe(res);
-
-        pythonProcess.stderr.on('data', (data) => {
-            console.error(`[TTS Python Error] ${data}`);
+        const response = await fetch('http://127.0.0.1:8000/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text })
         });
 
-        pythonProcess.on('close', (code) => {
-            if (code !== 0) {
-                console.error(`[TTS] Python process exited with code ${code}`);
-                if (!res.headersSent) {
-                    res.status(500).json({ error: 'TTS Generation failed' });
-                }
-            } else {
-                console.log('[TTS] Generation complete');
-            }
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Kokoro server error: ${errorText}`);
+        }
+
+        res.setHeader('Content-Type', 'audio/pcm');
+        // Stream the response directly from the Python server to the client
+        response.body.pipe(res);
+
+        response.body.on('end', () => {
+            console.log('[TTS] Generation complete (via server)');
         });
 
     } catch (err) {
-        console.error('[TTS] Proxy Error:', err);
+        console.error('[TTS] Optimization Error:', err.message);
         if (!res.headersSent) {
-            res.status(500).json({ error: 'TTS Generation failed' });
+            res.status(500).json({ error: 'TTS Generation failed', details: err.message });
         }
     }
 });
+
 
 // Global Error Handler (Must be last)
 app.use((err, req, res, next) => {
