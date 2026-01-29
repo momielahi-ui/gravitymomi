@@ -15,7 +15,6 @@
     "@supabase/supabase-js": "^2.89.0",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/nodemailer": "^7.0.4",
-    "@vapi-ai/web": "^2.5.2",
     "autoprefixer": "^10.4.23",
     "better-sqlite3": "^12.5.0",
     "concurrently": "^9.2.1",

@@ -13,9 +13,6 @@ import type { ResourceContent } from './resourceData';
 // In production, set VITE_API_URL in your hosting provider (e.g. Vercel)
 const API_URL = import.meta.env.VITE_API_URL || 'https://gravitymomi.onrender.com/api';
 
-import Vapi from '@vapi-ai/web';
-const vapi = new Vapi(import.meta.env.VITE_VAPI_PUBLIC_KEY || 'your-vapi-public-key');
-
 // --- Shared Components ---
 
 interface CardProps {
@@ -1687,102 +1684,168 @@ const VoiceDemoView: React.FC<VoiceDemoViewProps> = ({ config, isDemoMode }) => 
   );
 };
 
-const VapiCallButton: React.FC<{ config: BusinessConfig; isDemoMode?: boolean }> = ({ config, isDemoMode }) => {
-  const [isCalling, setIsCalling] = useState(false);
-  const [callStatus, setCallStatus] = useState<string | null>(null);
+const VoiceInteractionCard: React.FC<{ config: BusinessConfig; isDemoMode?: boolean }> = ({ config, isDemoMode }) => {
+  const [isActive, setIsActive] = useState(false);
+  const [status, setStatus] = useState<string | null>(null);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const audioContextRef = useRef<AudioContext | null>(null);
 
-  useEffect(() => {
-    vapi.on('call-start', () => {
-      setIsCalling(true);
-      setCallStatus('Connected');
-    });
-    vapi.on('call-end', () => {
-      setIsCalling(false);
-      setCallStatus(null);
-    });
-    vapi.on('error', (e) => {
-      console.error('Vapi Error:', e);
-      setIsCalling(false);
-      setCallStatus('Error');
-    });
-    return () => {
-      vapi.removeAllListeners();
+  const startInteraction = async () => {
+    if (isActive) {
+      stopInteraction();
+      return;
+    }
+
+    setIsActive(true);
+    setStatus('Listening...');
+
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert('Speech Recognition is not supported in this browser. Please use Chrome or Edge.');
+      setIsActive(false);
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onresult = async (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      setStatus('Thinking...');
+
+      try {
+        const chatResponse = await fetch(`${API_URL}/chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: transcript,
+            config: config
+          })
+        });
+
+        const chatData = await chatResponse.json();
+        const aiText = chatData.response;
+        setStatus('Responding...');
+
+        const ttsResponse = await fetch(`${API_URL}/voice/tts`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: aiText })
+        });
+
+        if (!ttsResponse.ok) throw new Error('TTS failed');
+
+        const audioBuffer = await ttsResponse.arrayBuffer();
+        await playAudio(audioBuffer);
+
+      } catch (err) {
+        console.error('Interaction Error:', err);
+        setStatus('Error');
+        setTimeout(() => {
+          setIsActive(false);
+          setStatus(null);
+        }, 2000);
+      }
     };
-  }, []);
 
-  const handleCall = async () => {
-    if (isCalling) {
-      vapi.stop();
-    } else {
-      setCallStatus('Initiating...');
-      vapi.start({
-        name: isDemoMode ? "Smart Reception Demo" : "Smart Reception Assistant",
-        model: {
-          provider: "openai",
-          model: "gpt-4o",
-          messages: [
-            {
-              role: "system",
-              content: `You are the receptionist for Smart Reception AI. Business Context: ${config.services || 'General Inquiry'}. Tone: 'Breezy Professional.' Speak in short, punchy fragments. Use contractions (I'm, We're, Don't) 100% of the time. If you don't know something, say 'Hmm, good question, let me find out' instead of 'I am sorry, I do not have that information.'`
-            }
-          ],
-          emotionRecognitionEnabled: true
-        },
-        voice: {
-          provider: "cartesia",
-          voiceId: "694f9389-aac1-45b6-b726-9d9369183238",
-          model: "sonic-english"
-        },
-        transcriber: {
-          provider: "deepgram",
-          model: "nova-2",
-          language: "en"
-        },
-        server: {
-          url: "https://smartreceptionai.xyz/api/vapi-webhook"
-        },
-        endCallFunctionEnabled: true,
-        fillerInjectionEnabled: true,
-        backchannelingEnabled: true,
-        transcriptionEndpointingPlan: {
-          onPunctuationSeconds: 0.1,
-          onNoPunctuationSeconds: 1.5,
-          onNumberSeconds: 0.5
-        }
-      });
+    recognition.onerror = (event: any) => {
+      console.error('Recognition Error:', event.error);
+      if (event.error !== 'no-speech') {
+        setStatus('Retry');
+      }
+      setIsActive(false);
+      setStatus(null);
+    };
+
+    recognition.onend = () => {
+      if (status === 'Listening...') {
+        setIsActive(false);
+        setStatus(null);
+      }
+    };
+
+    recognition.start();
+  };
+
+  const stopInteraction = () => {
+    setIsActive(false);
+    setStatus(null);
+    setIsSpeaking(false);
+    if (audioContextRef.current) {
+      audioContextRef.current.close().catch(() => { });
+      audioContextRef.current = null;
+    }
+  };
+
+  const playAudio = async (arrayBuffer: ArrayBuffer) => {
+    try {
+      if (!audioContextRef.current) {
+        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+      }
+      const ctx = audioContextRef.current;
+
+      // Kokoro outputs float32 raw PCM at 24000Hz
+      const float32Array = new Float32Array(arrayBuffer);
+      const audioBuffer = ctx.createBuffer(1, float32Array.length, 24000);
+      audioBuffer.getChannelData(0).set(float32Array);
+
+      const source = ctx.createBufferSource();
+      source.buffer = audioBuffer;
+      source.connect(ctx.destination);
+
+      setIsSpeaking(true);
+      setStatus('AI Speaking');
+
+      source.onended = () => {
+        setIsSpeaking(false);
+        setIsActive(false);
+        setStatus(null);
+      };
+
+      source.start();
+    } catch (err) {
+      console.error('Playback Error:', err);
+      setIsActive(false);
+      setStatus(null);
     }
   };
 
   return (
     <Card
-      className={`p-6 group relative overflow-hidden transition-all duration-500 ${isCalling ? 'border-red-500/50 bg-red-500/5' : 'hover:border-purple-500/30'}`}
-      onClick={handleCall}
+      className={`p-6 group relative overflow-hidden transition-all duration-500 ${isActive ? 'border-purple-500/50 bg-purple-500/5 shadow-2xl shadow-purple-500/20' : 'hover:border-purple-500/30'}`}
+      onClick={startInteraction}
     >
-      {isCalling && (
+      {(isActive || isSpeaking) && (
         <div className="absolute top-4 right-4">
           <div className="flex gap-1 h-3 items-center">
-            <div className="w-1 h-full bg-red-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-            <div className="w-1 h-full bg-red-500 rounded-full animate-bounce" style={{ animationDelay: '200ms' }} />
-            <div className="w-1 h-full bg-red-500 rounded-full animate-bounce" style={{ animationDelay: '400ms' }} />
+            <div className={`w-1 h-full rounded-full animate-bounce ${isSpeaking ? 'bg-amber-500' : 'bg-purple-500'}`} style={{ animationDelay: '0ms' }} />
+            <div className={`w-1 h-full rounded-full animate-bounce ${isSpeaking ? 'bg-amber-500' : 'bg-purple-500'}`} style={{ animationDelay: '200ms' }} />
+            <div className={`w-1 h-full rounded-full animate-bounce ${isSpeaking ? 'bg-amber-500' : 'bg-purple-500'}`} style={{ animationDelay: '400ms' }} />
           </div>
         </div>
       )}
-      <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 transition duration-500 ${isCalling ? 'bg-red-500/20 group-hover:scale-110' : 'bg-gradient-to-br from-purple-500/20 to-indigo-500/20 group-hover:scale-110'}`}>
-        <PhoneOutgoing className={`w-7 h-7 ${isCalling ? 'text-red-400' : 'text-purple-400'}`} />
+      <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 transition duration-500 ${isActive ? 'bg-purple-500/20 scale-110' : 'bg-gradient-to-br from-purple-500/20 to-indigo-500/20 group-hover:scale-110'}`}>
+        {isSpeaking ? (
+          <Sparkles className="w-7 h-7 text-amber-400 animate-pulse" />
+        ) : (
+          <Mic className={`w-7 h-7 ${isActive ? 'text-purple-400 animate-pulse' : 'text-purple-400'}`} />
+        )}
       </div>
       <h3 className="text-xl font-semibold text-white mb-2 tracking-tight">
-        {isCalling ? 'End Voice Call' : isDemoMode ? 'Demo Voice Call' : 'Vapi Live Call'}
+        {isSpeaking ? 'AI is Responding' : isActive ? 'Listening...' : 'AI Voice Interaction'}
       </h3>
       <p className="text-titanium text-sm leading-relaxed mb-4">
-        {isCalling ? 'Call in progress. Speak now.' : isDemoMode ? 'Test the AI voice right now without a phone line.' : 'Talk with our AI receptionist in real-time (latency < 200ms).'}
+        {isSpeaking ? 'The AI is speaking. Listen closely.' : isActive ? 'Speak clearly now...' : 'Talk with our Kokoro-powered AI in real-time.'}
       </p>
       <div className="flex items-center gap-2">
-        {callStatus && (
-          <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded ${isCalling ? 'bg-red-500/10 text-red-400' : 'bg-purple-500/10 text-purple-400'}`}>
-            {callStatus}
+        {status && (
+          <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded ${isSpeaking ? 'bg-amber-500/10 text-amber-400' : 'bg-purple-500/10 text-purple-400'}`}>
+            {status}
           </span>
         )}
-        {isDemoMode && !isCalling && (
+        {isDemoMode && !isActive && !isSpeaking && (
           <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded bg-amber-500/10 text-amber-400">
             Preview
           </span>
@@ -1880,7 +1943,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({ config, onNavigate, isDem
           <p className="text-titanium text-sm leading-relaxed">Link your phone number to start receiving calls.</p>
         </Card>
 
-        <VapiCallButton config={config} isDemoMode={isDemoMode} />
+        <VoiceInteractionCard config={config} isDemoMode={isDemoMode} />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
