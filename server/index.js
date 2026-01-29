@@ -1097,6 +1097,25 @@ app.get('/robots.txt', (req, res) => {
     });
 });
 
+// Debug endpoint to check if sitemap exists on server
+app.get('/api/debug-sitemap', (req, res) => {
+    const distPath = path.join(__dirname, '../dist/sitemap.xml');
+    const publicPath = path.join(__dirname, '../public/sitemap.xml');
+
+    const distExists = fs.existsSync(distPath);
+    const publicExists = fs.existsSync(publicPath);
+
+    res.json({
+        distPath,
+        publicPath,
+        distExists,
+        publicExists,
+        dirname: __dirname,
+        cwd: process.cwd(),
+        filesInDist: distExists ? 'Yes' : (fs.existsSync(path.join(__dirname, '../dist')) ? fs.readdirSync(path.join(__dirname, '../dist')) : 'dist folder missing')
+    });
+});
+
 // Serve static files from the React app build directory
 app.use(express.static(path.join(__dirname, '../dist')));
 
