@@ -1101,6 +1101,7 @@ app.get('/sitemap.xml', (req, res) => {
     const pages = ['', '/about-us', '/contact-us', '/resource-hub', '/service-ai-chat', '/service-ai-voice', '/service-automation', '/privacy-policy', '/terms-conditions'];
 
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/sitemap.xsl"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${pages.map(p => `  <url><loc>${domain}${p}</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>`).join('\n')}
 </urlset>`;
