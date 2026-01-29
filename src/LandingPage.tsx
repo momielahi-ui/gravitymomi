@@ -1,11 +1,12 @@
 import { Phone, MessageSquare, Sparkles, CheckCircle2, ArrowRight, Zap, Shield, Clock } from 'lucide-react';
+import { memo } from 'react';
 
 interface LandingPageProps {
     onGetStarted: () => void;
     onTryDemo: () => void;
 }
 
-export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onTryDemo }) => {
+export const LandingPage: React.FC<LandingPageProps> = memo(({ onGetStarted, onTryDemo }) => {
     return (
         <div className="min-h-screen bg-gradient-to-b from-deep-black via-deep-black to-zinc-900">
             {/* Hero Section */}
@@ -35,14 +36,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onTryDem
                         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-8">
                             <button
                                 onClick={onGetStarted}
-                                className="group px-8 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl text-white font-semibold text-lg hover:shadow-2xl hover:shadow-purple-500/50 transition-all duration-300 hover:scale-105 flex items-center gap-2"
+                                className="group px-8 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl text-white font-semibold text-lg hover:shadow-xl hover:shadow-purple-500/30 transition-shadow duration-200 flex items-center gap-2"
                             >
                                 Get Started Free
-                                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" />
                             </button>
                             <button
                                 onClick={onTryDemo}
-                                className="px-8 py-4 glass-panel-pro rounded-2xl text-white font-semibold text-lg hover:bg-white/10 transition-all duration-300 border border-white/10"
+                                className="px-8 py-4 glass-panel-pro rounded-2xl text-white font-semibold text-lg hover:bg-white/10 transition-colors duration-200 border border-white/10"
                             >
                                 Try Live Demo
                             </button>
@@ -63,8 +64,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onTryDem
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div className="glass-panel-pro p-8 rounded-3xl hover:border-purple-500/30 transition-all duration-300 group">
-                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500/20 to-indigo-500/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                    <div className="glass-panel-pro p-8 rounded-3xl hover:border-purple-500/30 transition-colors duration-200 group">
+                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500/20 to-indigo-500/20 flex items-center justify-center mb-6">
                             <Phone className="w-7 h-7 text-purple-400" />
                         </div>
                         <h3 className="text-2xl font-bold text-white mb-4">Ultra-Low Latency Voice</h3>
@@ -73,8 +74,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onTryDem
                         </p>
                     </div>
 
-                    <div className="glass-panel-pro p-8 rounded-3xl hover:border-indigo-500/30 transition-all duration-300 group">
-                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-blue-500/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                    <div className="glass-panel-pro p-8 rounded-3xl hover:border-indigo-500/30 transition-colors duration-200 group">
+                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-blue-500/20 flex items-center justify-center mb-6">
                             <MessageSquare className="w-7 h-7 text-indigo-400" />
                         </div>
                         <h3 className="text-2xl font-bold text-white mb-4">Intelligent Chat</h3>
@@ -83,8 +84,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onTryDem
                         </p>
                     </div>
 
-                    <div className="glass-panel-pro p-8 rounded-3xl hover:border-emerald-500/30 transition-all duration-300 group">
-                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                    <div className="glass-panel-pro p-8 rounded-3xl hover:border-emerald-500/30 transition-colors duration-200 group">
+                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 flex items-center justify-center mb-6">
                             <Clock className="w-7 h-7 text-emerald-400" />
                         </div>
                         <h3 className="text-2xl font-bold text-white mb-4">24/7 Availability</h3>
@@ -93,8 +94,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onTryDem
                         </p>
                     </div>
 
-                    <div className="glass-panel-pro p-8 rounded-3xl hover:border-amber-500/30 transition-all duration-300 group">
-                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                    <div className="glass-panel-pro p-8 rounded-3xl hover:border-amber-500/30 transition-colors duration-200 group">
+                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center mb-6">
                             <Zap className="w-7 h-7 text-amber-400" />
                         </div>
                         <h3 className="text-2xl font-bold text-white mb-4">Instant Setup</h3>
@@ -103,8 +104,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onTryDem
                         </p>
                     </div>
 
-                    <div className="glass-panel-pro p-8 rounded-3xl hover:border-pink-500/30 transition-all duration-300 group">
-                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-pink-500/20 to-rose-500/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                    <div className="glass-panel-pro p-8 rounded-3xl hover:border-pink-500/30 transition-colors duration-200 group">
+                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-pink-500/20 to-rose-500/20 flex items-center justify-center mb-6">
                             <Shield className="w-7 h-7 text-pink-400" />
                         </div>
                         <h3 className="text-2xl font-bold text-white mb-4">Enterprise Security</h3>
@@ -113,8 +114,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onTryDem
                         </p>
                     </div>
 
-                    <div className="glass-panel-pro p-8 rounded-3xl hover:border-cyan-500/30 transition-all duration-300 group">
-                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                    <div className="glass-panel-pro p-8 rounded-3xl hover:border-cyan-500/30 transition-colors duration-200 group">
+                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 flex items-center justify-center mb-6">
                             <Sparkles className="w-7 h-7 text-cyan-400" />
                         </div>
                         <h3 className="text-2xl font-bold text-white mb-4">Natural Conversations</h3>
@@ -194,7 +195,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onTryDem
                         </ul>
                         <button
                             onClick={onGetStarted}
-                            className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold hover:shadow-lg hover:shadow-purple-500/50 transition-all"
+                            className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold hover:shadow-lg hover:shadow-purple-500/30 transition-shadow duration-200"
                         >
                             Get Started
                         </button>
@@ -244,13 +245,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onTryDem
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                     <button
                         onClick={onGetStarted}
-                        className="px-8 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl text-white font-semibold text-lg hover:shadow-2xl hover:shadow-purple-500/50 transition-all duration-300"
+                        className="px-8 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl text-white font-semibold text-lg hover:shadow-xl hover:shadow-purple-500/30 transition-shadow duration-200"
                     >
                         Start Free Trial
                     </button>
                     <button
                         onClick={onTryDemo}
-                        className="px-8 py-4 glass-panel-pro rounded-2xl text-white font-semibold text-lg hover:bg-white/10 transition-all duration-300 border border-white/10"
+                        className="px-8 py-4 glass-panel-pro rounded-2xl text-white font-semibold text-lg hover:bg-white/10 transition-colors duration-200 border border-white/10"
                     >
                         Try Demo First
                     </button>
@@ -258,4 +259,4 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onTryDem
             </div>
         </div>
     );
-};
+});
