@@ -15,22 +15,24 @@ const idRegex = /id:\s*'([^']*)'/g;
 const ids = [];
 let match;
 while ((match = idRegex.exec(resourceDataContent)) !== null) {
-    ids.push(match[1]);
+  ids.push(match[1]);
 }
 
 const domain = 'https://smartreceptionai.xyz';
-const today = new Date().toISOString().split('T')[0];
+// Use yesterday's date to avoid "future date" errors due to timezone differences (e.g. UTC vs PST)
+const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+const today = yesterday; // Keeping variable name for compatibility but value is safe
 
 const staticPages = [
-    '',
-    '/resource-hub',
-    '/service-ai-chat',
-    '/service-ai-voice',
-    '/service-automation',
-    '/about-us',
-    '/contact-us',
-    '/privacy-policy',
-    '/terms-conditions'
+  '',
+  '/resource-hub',
+  '/service-ai-chat',
+  '/service-ai-voice',
+  '/service-automation',
+  '/about-us',
+  '/contact-us',
+  '/privacy-policy',
+  '/terms-conditions'
 ];
 
 const xmlHeader = `<?xml version="1.0" encoding="UTF-8"?>
