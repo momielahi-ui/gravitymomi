@@ -1091,61 +1091,85 @@ app.post('/webhooks/twilio/status', express.urlencoded({ extended: false }), val
         if (req.path.startsWith('/api/') || req.path.startsWith('/webhooks/')) {
             return res.status(404).json({ error: 'API endpoint not found' });
         }
+    });
+
+    // Serve sitemap.xml explicitly to ensure correct Content-Type
+    app.get('/sitemap.xml', (req, res) => {
+        res.sendFile(path.join(__dirname, '../public/sitemap.xml'), {
+            headers: {
+                'Content-Type': 'application/xml'
+            }
+        });
+    });
+
+    // Serve robots.txt explicitly
+    app.get('/robots.txt', (req, res) => {
+        res.sendFile(path.join(__dirname, '../public/robots.txt'), {
+            headers: {
+                'Content-Type': 'text/plain'
+            }
+        });
+    });
+
+    // Serve static files from the React app build directory
+    app.use(express.static(path.join(__dirname, '../dist')));
+
+    // Catch-all handler for any request that doesn't match an API route
+    // Sends back the React index.html file so React Router can handle the routing
+    app.get('*', (req, res) => {
         res.sendFile(path.join(__dirname, '../dist/index.html'));
     });
 
-});
+    const server = app.listen(port, () => {
+        console.log(`Backend running at http://0.0.0.0:${port}`);
+        if (twilioClient) {
+            console.log('✅ Twilio integration enabled');
+        } else {
+            console.log('⚠️  Twilio not configured (add credentials to .env)');
+        }
+    });
 
-app.listen(port, '0.0.0.0', () => {
-    console.log(`Backend running at http://0.0.0.0:${port}`);
-    if (twilioClient) {
-        console.log('✅ Twilio integration enabled');
-    } else {
-        console.log('⚠️  Twilio not configured (add credentials to .env)');
-    }
-});
+    // Debug: Prevent immediate exit if app.listen fails to hold event loop
+    setInterval(() => { }, 10000);
 
-// Debug: Prevent immediate exit if app.listen fails to hold event loop
-setInterval(() => { }, 10000);
+    process.on('exit', (code) => {
+        console.log(`Process exiting with code: ${code}`);
+    });
+    process.on('unhandledRejection', (reason, p) => {
+        console.log('Unhandled Rejection at:', p, 'reason:', reason);
+    });
 
-process.on('exit', (code) => {
-    console.log(`Process exiting with code: ${code}`);
-});
-process.on('unhandledRejection', (reason, p) => {
-    console.log('Unhandled Rejection at:', p, 'reason:', reason);
-});
+    // POST /api/admin/test-email (Debug)
+    app.post('/api/admin/test-email', requireAdmin, async (req, res) => {
+        console.log('[Debug] Testing SMTP Connection...');
+        const sender = getSender();
+        const password = process.env.EMAIL_PASSWORD;
 
-// POST /api/admin/test-email (Debug)
-app.post('/api/admin/test-email', requireAdmin, async (req, res) => {
-    console.log('[Debug] Testing SMTP Connection...');
-    const sender = getSender();
-    const password = process.env.EMAIL_PASSWORD;
+        if (!sender || !password) {
+            return res.status(500).json({ error: 'Missing SENDER_EMAIL or EMAIL_PASSWORD in Live Environment' });
+        }
 
-    if (!sender || !password) {
-        return res.status(500).json({ error: 'Missing SENDER_EMAIL or EMAIL_PASSWORD in Live Environment' });
-    }
+        try {
+            await transporter.verify();
+            console.log('[Debug] SMTP Verify Success');
 
-    try {
-        await transporter.verify();
-        console.log('[Debug] SMTP Verify Success');
+            await transporter.sendMail({
+                from: `"SmartReception Debug" <${sender}>`,
+                to: sender,
+                subject: 'Debug: SMTP Configuration Works',
+                text: 'Your email configuration on Render is correct!'
+            });
 
-        await transporter.sendMail({
-            from: `"SmartReception Debug" <${sender}>`,
-            to: sender,
-            subject: 'Debug: SMTP Configuration Works',
-            text: 'Your email configuration on Render is correct!'
-        });
-
-        res.json({ success: true, message: `SMTP Verified! Email sent to ${sender}` });
-    } catch (err) {
-        console.error('[Debug] SMTP Failed:', err);
-        res.status(500).json({
-            error: 'SMTP Connection Failed',
-            details: err.message,
-            code: err.code,
-            tip: err.code === 'EAUTH' ? 'Check EMAIL_PASSWORD. Must be an App Password.' : 'Check SENDER_EMAIL.'
-        });
-    }
-});
+            res.json({ success: true, message: `SMTP Verified! Email sent to ${sender}` });
+        } catch (err) {
+            console.error('[Debug] SMTP Failed:', err);
+            res.status(500).json({
+                error: 'SMTP Connection Failed',
+                details: err.message,
+                code: err.code,
+                tip: err.code === 'EAUTH' ? 'Check EMAIL_PASSWORD. Must be an App Password.' : 'Check SENDER_EMAIL.'
+            });
+        }
+    });
 
 
