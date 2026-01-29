@@ -1,6 +1,10 @@
 {
     "rewrites": [
         {
+            "source": "/sitemap.xml",
+            "destination": "/api/sitemap"
+        },
+        {
             "source": "/((?!api/|webhooks/|assets/|favicon|google|ads\\.txt|sitemap|robots).*)",
             "destination": "/index.html"
         }
