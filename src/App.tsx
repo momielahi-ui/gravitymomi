@@ -9,6 +9,7 @@ import { supabase } from './lib/supabase';
 import logo from './assets/logo.png';
 import { resources } from './resourceData';
 import type { ResourceContent } from './resourceData';
+import { LandingPage } from './LandingPage';
 
 // In production, set VITE_API_URL in your hosting provider (e.g. Vercel)
 const API_URL = import.meta.env.VITE_API_URL || 'https://gravitymomi.onrender.com/api';
@@ -2420,7 +2421,7 @@ const AppShell: React.FC<AppShellProps> = ({ children, onLogout, user, onViewCha
 export default function App() {
   const [session, setSession] = useState<any>(null);
   const [config, setConfig] = useState<BusinessConfig | null>(null);
-  const [view, setView] = useState('loading'); // loading, auth, onboarding, dashboard, chat-demo, phone-demo, settings
+  const [view, setView] = useState('landing'); // landing, loading, auth, onboarding, dashboard, chat-demo, phone-demo, settings
   const [isDemoMode, setIsDemoMode] = useState(false);
   // Handle URL Routing / Whop Integration
   useEffect(() => {
@@ -2462,7 +2463,7 @@ export default function App() {
             setIsDemoMode(false);
             checkSetup(session);
           } else if (!isDemoMode && path === '/') {
-            setView('auth');
+            setView('landing');
           } else if (!isDemoMode && path !== '/') {
             // If we are on a custom route like /resource-hub but 
             // no session, let the custom route stay.
@@ -2568,6 +2569,16 @@ export default function App() {
     setConfig({} as BusinessConfig); // Empty config starts Onboarding flow
     setView('onboarding');
   };
+
+  // Show landing page for non-authenticated users
+  if (view === 'landing') {
+    return (
+      <LandingPage
+        onGetStarted={() => setView('auth')}
+        onTryDemo={handleTryDemo}
+      />
+    );
+  }
 
   if (view === 'loading' && !isDemoMode) {
     return (
