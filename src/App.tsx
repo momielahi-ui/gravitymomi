@@ -2423,6 +2423,58 @@ export default function App() {
   const [config, setConfig] = useState<BusinessConfig | null>(null);
   const [view, setView] = useState('landing'); // landing, loading, auth, onboarding, dashboard, chat-demo, phone-demo, settings
   const [isDemoMode, setIsDemoMode] = useState(false);
+
+  // Update canonical tag and meta description based on current view
+  useEffect(() => {
+    const baseUrl = 'https://smartreceptionai.xyz';
+    const path = window.location.pathname;
+    const canonicalUrl = path === '/' ? baseUrl + '/' : baseUrl + path;
+
+    // Update or create canonical tag
+    let canonicalLink = document.querySelector('link[rel="canonical"]');
+    if (!canonicalLink) {
+      canonicalLink = document.createElement('link');
+      canonicalLink.setAttribute('rel', 'canonical');
+      document.head.appendChild(canonicalLink);
+    }
+    canonicalLink.setAttribute('href', canonicalUrl);
+
+    // Update meta description based on view
+    const descriptions: Record<string, string> = {
+      'landing': 'Never miss a lead again. SmartReception.ai handles calls, chats, and appointments 24/7 with natural, human-like AI that sounds remarkably professional.',
+      'resource-hub': 'Explore articles and case studies about AI receptionists, customer service automation, and business productivity.',
+      'service-ai-chat': 'Intelligent AI chat that qualifies leads, answers FAQs, and books appointments instantly through your website.',
+      'service-ai-voice': 'Ultra-low latency AI voice with Kokoro-82M TTS. Sub-second response times that sound remarkably human.',
+      'service-automation': 'Automate your business workflows with AI-powered receptionist services available 24/7.',
+      'about-us': 'Learn about SmartReception.ai and our mission to provide intelligent AI-driven receptionist services for modern businesses.',
+      'contact-us': 'Get in touch with SmartReception.ai for support, sales inquiries, or partnership opportunities.',
+      'privacy-policy': 'SmartReception.ai Privacy Policy - Learn how we protect your data and respect your privacy.',
+      'terms-conditions': 'SmartReception.ai Terms and Conditions - Read our terms of service and user agreement.'
+    };
+
+    const metaDescription = document.querySelector('meta[name="description"]');
+    if (metaDescription && descriptions[view]) {
+      metaDescription.setAttribute('content', descriptions[view]);
+    }
+
+    // Update page title
+    const titles: Record<string, string> = {
+      'landing': 'SmartReception.ai - Your AI Receptionist, Always On Call',
+      'resource-hub': 'Resource Hub - SmartReception.ai',
+      'service-ai-chat': 'AI Chat Service - SmartReception.ai',
+      'service-ai-voice': 'AI Voice Service - SmartReception.ai',
+      'service-automation': 'Business Automation - SmartReception.ai',
+      'about-us': 'About Us - SmartReception.ai',
+      'contact-us': 'Contact Us - SmartReception.ai',
+      'privacy-policy': 'Privacy Policy - SmartReception.ai',
+      'terms-conditions': 'Terms & Conditions - SmartReception.ai'
+    };
+
+    if (titles[view]) {
+      document.title = titles[view];
+    }
+  }, [view]);
+
   // Handle URL Routing / Whop Integration
   useEffect(() => {
     const handleRouting = async () => {
