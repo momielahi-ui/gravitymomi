@@ -1085,6 +1085,10 @@ app.get('/sitemap.xml', (req, res) => {
     const publicPath = path.join(__dirname, '../public/sitemap.xml');
 
     res.header('Content-Type', 'application/xml');
+    res.header('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.header('Pragma', 'no-cache');
+    res.header('Expires', '0');
+    res.header('Surrogate-Control', 'no-store');
 
     if (fs.existsSync(distPath)) {
         return res.sendFile(distPath);
