@@ -1095,7 +1095,7 @@ app.post('/webhooks/twilio/status', express.urlencoded({ extended: false }), val
 
     // Serve sitemap.xml explicitly to ensure correct Content-Type
     app.get('/sitemap.xml', (req, res) => {
-        res.sendFile(path.join(__dirname, '../public/sitemap.xml'), {
+        res.sendFile(path.join(__dirname, '../dist/sitemap.xml'), {
             headers: {
                 'Content-Type': 'application/xml'
             }
@@ -1104,7 +1104,7 @@ app.post('/webhooks/twilio/status', express.urlencoded({ extended: false }), val
 
     // Serve robots.txt explicitly
     app.get('/robots.txt', (req, res) => {
-        res.sendFile(path.join(__dirname, '../public/robots.txt'), {
+        res.sendFile(path.join(__dirname, '../dist/robots.txt'), {
             headers: {
                 'Content-Type': 'text/plain'
             }
