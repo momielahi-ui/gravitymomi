@@ -171,91 +171,91 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onTryDem
                         </div>
                         <h3 className="text-2xl font-bold text-white mb-2">Professional</h3>
                         <div className="mb-6">
-                            <span className="text-5xl font-bold text-white">$99</span>
+                            <span className="text-5xl font-bold text-white">$79</span>
                             <span className="text-titanium">/month</span>
-                        </div>
-                        <ul className="space-y-4 mb-8">
-                            <li className="flex items-start gap-3">
-                                <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
-                                <span className="text-titanium">2,000 AI interactions/month</span>
-                            </li>
-                            <li className="flex items-start gap-3">
-                                <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
-                                <span className="text-titanium">Priority voice quality</span>
-                            </li>
-                            <li className="flex items-start gap-3">
-                                <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
-                                <span className="text-titanium">CRM integrations</span>
-                            </li>
-                            <li className="flex items-start gap-3">
-                                <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
-                                <span className="text-titanium">Advanced analytics</span>
-                            </li>
-                        </ul>
-                        <button
-                            onClick={onGetStarted}
-                            className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold hover:shadow-lg hover:shadow-purple-500/50 transition-all"
-                        >
-                            Get Started
-                        </button>
-                    </div>
-
-                    <div className="glass-panel-pro p-8 rounded-3xl border-white/10">
-                        <h3 className="text-2xl font-bold text-white mb-2">Enterprise</h3>
-                        <div className="mb-6">
-                            <span className="text-5xl font-bold text-white">Custom</span>
-                        </div>
-                        <ul className="space-y-4 mb-8">
-                            <li className="flex items-start gap-3">
-                                <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
-                                <span className="text-titanium">Unlimited interactions</span>
-                            </li>
-                            <li className="flex items-start gap-3">
-                                <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
-                                <span className="text-titanium">Dedicated support</span>
-                            </li>
-                            <li className="flex items-start gap-3">
-                                <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
-                                <span className="text-titanium">Custom voice training</span>
-                            </li>
-                            <li className="flex items-start gap-3">
-                                <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
-                                <span className="text-titanium">White-label options</span>
-                            </li>
-                        </ul>
-                        <button
-                            onClick={onGetStarted}
-                            className="w-full py-3 rounded-xl border border-white/20 text-white font-semibold hover:bg-white/5 transition-all"
-                        >
-                            Contact Sales
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            {/* Final CTA */}
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center">
-                <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-                    Ready to Transform Your Customer Service?
-                </h2>
-                <p className="text-xl text-titanium mb-8">
-                    Join hundreds of businesses using AI to capture more leads and delight customers.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                        </div>            </div>
+                    <ul className="space-y-4 mb-8">
+                        <li className="flex items-start gap-3">
+                            <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
+                            <span className="text-titanium">2,000 AI interactions/month</span>
+                        </li>
+                        <li className="flex items-start gap-3">
+                            <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
+                            <span className="text-titanium">Priority voice quality</span>
+                        </li>
+                        <li className="flex items-start gap-3">
+                            <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
+                            <span className="text-titanium">CRM integrations</span>
+                        </li>
+                        <li className="flex items-start gap-3">
+                            <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
+                            <span className="text-titanium">Advanced analytics</span>
+                        </li>
+                    </ul>
                     <button
                         onClick={onGetStarted}
-                        className="px-8 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl text-white font-semibold text-lg hover:shadow-2xl hover:shadow-purple-500/50 transition-all duration-300"
+                        className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold hover:shadow-lg hover:shadow-purple-500/50 transition-all"
                     >
-                        Start Free Trial
+                        Get Started
                     </button>
+                </div>
+
+                <div className="glass-panel-pro p-8 rounded-3xl border-white/10">
+                    <h3 className="text-2xl font-bold text-white mb-2">Enterprise</h3>
+                    <div className="mb-6">
+                        <span className="text-5xl font-bold text-white">Custom</span>
+                    </div>
+                    <ul className="space-y-4 mb-8">
+                        <li className="flex items-start gap-3">
+                            <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
+                            <span className="text-titanium">Unlimited interactions</span>
+                        </li>
+                        <li className="flex items-start gap-3">
+                            <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
+                            <span className="text-titanium">Dedicated support</span>
+                        </li>
+                        <li className="flex items-start gap-3">
+                            <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
+                            <span className="text-titanium">Custom voice training</span>
+                        </li>
+                        <li className="flex items-start gap-3">
+                            <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
+                            <span className="text-titanium">White-label options</span>
+                        </li>
+                    </ul>
                     <button
-                        onClick={onTryDemo}
-                        className="px-8 py-4 glass-panel-pro rounded-2xl text-white font-semibold text-lg hover:bg-white/10 transition-all duration-300 border border-white/10"
+                        onClick={onGetStarted}
+                        className="w-full py-3 rounded-xl border border-white/20 text-white font-semibold hover:bg-white/5 transition-all"
                     >
-                        Try Demo First
+                        Contact Sales
                     </button>
                 </div>
             </div>
         </div>
+
+            {/* Final CTA */ }
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center">
+        <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+            Ready to Transform Your Customer Service?
+        </h2>
+        <p className="text-xl text-titanium mb-8">
+            Join hundreds of businesses using AI to capture more leads and delight customers.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <button
+                onClick={onGetStarted}
+                className="px-8 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl text-white font-semibold text-lg hover:shadow-2xl hover:shadow-purple-500/50 transition-all duration-300"
+            >
+                Start Free Trial
+            </button>
+            <button
+                onClick={onTryDemo}
+                className="px-8 py-4 glass-panel-pro rounded-2xl text-white font-semibold text-lg hover:bg-white/10 transition-all duration-300 border border-white/10"
+            >
+                Try Demo First
+            </button>
+        </div>
+    </div>
+        </div >
     );
 };
