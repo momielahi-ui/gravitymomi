@@ -17,23 +17,36 @@ export default function handler(req, res) {
         '/terms-conditions'
     ];
 
-    // 2. Try to read Articles from resourceData.ts
-    // In Vercel Serverless, source files might not be available, so we try-catch.
-    let articleUrls = [];
-    try {
-        const resourceDataPath = path.join(process.cwd(), 'src', 'resourceData.ts');
-        if (fs.existsSync(resourceDataPath)) {
-            const content = fs.readFileSync(resourceDataPath, 'utf-8');
-            const matches = content.matchAll(/id:\s*['"]([^'"]+)['"]/g);
-            for (const match of matches) {
-                if (match[1]) {
-                    articleUrls.push(`/resource-${match[1]}`);
-                }
-            }
-        }
-    } catch (e) {
-        console.warn('Could not read resourceData.ts', e);
-    }
+    // 2. Define Articles (Hardcoded to avoid runtime file access issues in Serverless)
+    const articleSlugs = [
+        'roi-of-first-impressions',
+        'ai-vs-human-interaction',
+        'maximizing-lead-conversion',
+        'hidden-cost-of-missed-calls',
+        'modern-telephone-etiquette',
+        'data-privacy-communications',
+        'scalability-on-demand',
+        'evolution-of-front-desk',
+        'bilingual-support-excellence',
+        'productivity-hacks-outsourcing',
+        'bridging-the-gap-crm',
+        'anatomy-of-perfect-greeting',
+        'reducing-no-shows-reminders',
+        'silent-growth-loud-support',
+        'communication-trends-2026',
+        'case-study-legal',
+        'case-study-healthcare',
+        'case-study-real-estate',
+        'case-study-financial',
+        'case-study-home-services',
+        'case-study-tech-startup',
+        'case-study-high-end-retail',
+        'case-study-senior-living',
+        'case-study-education',
+        'case-study-marketing-agency'
+    ];
+
+    const articleUrls = articleSlugs.map(slug => `/resource-${slug}`);
 
     // 3. Combine URLs
     // Use yesterday's date to be safe
