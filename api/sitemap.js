@@ -6,7 +6,7 @@ export default function handler(req, res) {
 
     // 1. Define Static Pages
     const staticPages = [
-        '',
+        '/',
         '/about-us',
         '/contact-us',
         '/resource-hub',
@@ -56,8 +56,8 @@ export default function handler(req, res) {
         ...staticPages.map(url => ({
             loc: `${domain}${url}`,
             lastmod: yesterday,
-            changefreq: url === '' ? 'daily' : 'weekly',
-            priority: url === '' ? '1.0' : '0.8'
+            changefreq: url === '/' ? 'daily' : 'weekly',
+            priority: url === '/' ? '1.0' : '0.8'
         })),
         ...articleUrls.map(url => ({
             loc: `${domain}${url}`,
