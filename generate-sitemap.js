@@ -24,7 +24,7 @@ const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
 const today = yesterday; // Keeping variable name for compatibility but value is safe
 
 const staticPages = [
-  '',
+  '/',
   '/resource-hub',
   '/service-ai-chat',
   '/service-ai-voice',
@@ -36,7 +36,6 @@ const staticPages = [
 ];
 
 const xmlHeader = `<?xml version="1.0" encoding="UTF-8"?>
-<?xml-stylesheet type="text/xsl" href="/sitemap.xsl"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">`;
 
 const xmlFooter = `</urlset>`;
@@ -45,8 +44,8 @@ const staticUrls = staticPages.map(page => `
   <url>
     <loc>${domain}${page}</loc>
     <lastmod>${today}</lastmod>
-    <changefreq>${page === '' ? 'daily' : 'weekly'}</changefreq>
-    <priority>${page === '' ? '1.0' : '0.8'}</priority>
+    <changefreq>${page === '/' ? 'daily' : 'weekly'}</changefreq>
+    <priority>${page === '/' ? '1.0' : '0.8'}</priority>
   </url>`).join('');
 
 const dynamicUrls = ids.map(id => `
