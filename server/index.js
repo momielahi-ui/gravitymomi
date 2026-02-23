@@ -1,4 +1,5 @@
 import express from 'express';
+import fs from 'fs';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { createClient } from '@supabase/supabase-js';
@@ -1100,6 +1101,37 @@ app.get('/sitemap.xml', (req, res) => {
 
     // Fallback: Generate dynamic sitemap if files are missing
     console.warn('[Sitemap] Static file missing, generating dynamically');
+    const domain = 'https://smartreceptionai.xyz';
+    const today = new Date().toISOString().split('T')[0];
+    const pages = ['', '/about-us', '/contact-us', '/resource-hub', '/service-ai-chat', '/service-ai-voice', '/service-automation', '/privacy-policy', '/terms-conditions'];
+
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/sitemap.xsl"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${pages.map(p => `  <url><loc>${domain}${p}</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>`).join('\n')}
+</urlset>`;
+
+    res.send(xml);
+});
+
+// Alias for /api/sitemap (Google Search Console expectation)
+app.get('/api/sitemap', (req, res) => {
+    // Reuse the exact same logic as /sitemap.xml
+    const distPath = path.join(__dirname, '../dist/sitemap.xml');
+    const publicPath = path.join(__dirname, '../public/sitemap.xml');
+
+    res.header('Content-Type', 'application/xml');
+    res.header('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+
+    if (fs.existsSync(distPath)) {
+        return res.sendFile(distPath);
+    }
+
+    if (fs.existsSync(publicPath)) {
+        return res.sendFile(publicPath);
+    }
+
+    // Fallback dynamic generation (duplicate of above, could be refactored but keeping safe)
     const domain = 'https://smartreceptionai.xyz';
     const today = new Date().toISOString().split('T')[0];
     const pages = ['', '/about-us', '/contact-us', '/resource-hub', '/service-ai-chat', '/service-ai-voice', '/service-automation', '/privacy-policy', '/terms-conditions'];

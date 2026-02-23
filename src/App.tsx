@@ -502,8 +502,8 @@ const authenticatedFetch = async (url: string, options: RequestInit = {}, retrie
     } catch (err: any) {
       console.warn(`[Fetch] Attempt ${i + 1} failed:`, err);
       if (i === retries - 1) throw err;
-      // Wait 3 seconds before retrying (gives Render time to wake up)
-      await new Promise(r => setTimeout(r, 3000));
+      // Wait 15 seconds before retrying (Render cold start can take 30-60s)
+      await new Promise(r => setTimeout(r, 15000));
     }
   }
   throw new Error("Maximum retries reached");
@@ -824,6 +824,17 @@ const ChatDemoView: React.FC<ChatDemoViewProps> = ({ config, isDemoMode }) => {
     setInput('');
     setIsLoading(true);
 
+    // Show a warm-up hint after 5s if still waiting (Render cold-start)
+    const warmupTimer = setTimeout(() => {
+      setMessages(prev => {
+        const lastMsg = prev[prev.length - 1];
+        if (lastMsg?.role === 'user') {
+          return [...prev, { role: 'assistant', content: '⏳ Our AI server is waking up from sleep mode — this first response may take up to 60 seconds. Subsequent messages will be instant!' }];
+        }
+        return prev;
+      });
+    }, 6000);
+
     try {
       // Pass config in body if in Demo Mode
       const bodyPayload = {
@@ -841,16 +852,26 @@ const ChatDemoView: React.FC<ChatDemoViewProps> = ({ config, isDemoMode }) => {
         body: JSON.stringify(bodyPayload)
       });
 
+      clearTimeout(warmupTimer);
+
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
         throw new Error(errorData.error || `Server error: ${res.status}`);
       }
 
       const data = await res.json();
-      setMessages(prev => [...prev, { role: 'assistant', content: data.response }]);
+      // Remove the warm-up placeholder if it was shown, then add the real response
+      setMessages(prev => {
+        const filtered = prev.filter(m => !m.content.startsWith('⏳ Our AI server'));
+        return [...filtered, { role: 'assistant', content: data.response }];
+      });
     } catch (err: any) {
+      clearTimeout(warmupTimer);
       console.error("Chat Error:", err);
-      setMessages(prev => [...prev, { role: 'assistant', content: `Connection failed: ${err.message || 'Unknown error'}` }]);
+      setMessages(prev => {
+        const filtered = prev.filter(m => !m.content.startsWith('⏳ Our AI server'));
+        return [...filtered, { role: 'assistant', content: `Connection failed: ${err.message || 'Unknown error'}. Please try again.` }];
+      });
     } finally {
       setIsLoading(false);
     }
@@ -2423,6 +2444,11 @@ export default function App() {
   const [config, setConfig] = useState<BusinessConfig | null>(null);
   const [view, setView] = useState('landing'); // landing, loading, auth, onboarding, dashboard, chat-demo, phone-demo, settings
   const [isDemoMode, setIsDemoMode] = useState(false);
+
+  // Wake up the Render backend on app load to prevent cold-start delays
+  useEffect(() => {
+    fetch(`${API_URL}/health`).catch(() => { });
+  }, []);
 
   // Update canonical tag and meta description based on current view
   useEffect(() => {

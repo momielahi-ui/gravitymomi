@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "concurrently \"node server/index.js\" \"vite --host\"",
-    "build": "tsc -b && vite build",
+    "build": "node generate-sitemap.js && tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "start": "node server/index.js"
