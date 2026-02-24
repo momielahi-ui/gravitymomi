@@ -360,12 +360,13 @@ app.post('/api/chat', async (req, res) => {
       4. Tone: Maintain a ${config.tone || 'professional'}, helpful, and business-like demeanor at all times.
       ${restaurantProtocols}
 
-      COMMUNICATION RULES (CRITICAL):
-      - PROFESSIONALISM: You are a formal business representative. Avoid all casual filler words, pauses, or hesitation sounds.
-      - DIRECTNESS: Provide clear, concise, and helpful information. Keep responses under 25 words.
-      - FORMAL STRUCTURE: Use proper grammar and professional sentence structures. Do not use upspeak or casual tags.
-      - CONTRACTIONS: Use professional contractions (We're, It's, Don't) but prioritize clarity over brevity.
-      - TONE: Be polite, efficient, and authoritative on business matters.`;
+      COMMUNICATION RULES (ABSOLUTE):
+      - NO FILLER WORDS: Absolutely never use words like "Mhm", "Umm", "Uh", "So...", or "Oh".
+      - PROFESSIONALISM: You are a formal, elite business representative. Be articulate, polite, and efficient.
+      - DIRECTNESS: Provide clear, concise information. Keep responses under 20 words where possible.
+      - FORMAL STRUCTURE: Use perfect grammar. Do not use upspeak, casual tags, or "yeah?".
+      - CONTRACTIONS: Use professional contractions (We're, It's, Don't) for a slightly natural but high-end corporate feel.
+      - TONE: Maintain a helpful yet strictly professional and business-like demeanor.`;
 
         // Validate History for Gemini (Must start with User)
         const safeHistory = Array.isArray(history) ? history : [];
@@ -1208,7 +1209,7 @@ app.use(express.static(path.join(__dirname, '../dist')));
 
 // Catch-all handler for any request that doesn't match an API route
 // Sends back the React index.html file so React Router can handle the routing
-app.get('*', (req, res) => {
+app.get('(.*)', (req, res) => {
     res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 
