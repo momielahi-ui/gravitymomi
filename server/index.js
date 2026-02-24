@@ -1209,7 +1209,7 @@ app.use(express.static(path.join(__dirname, '../dist')));
 
 // Catch-all handler for any request that doesn't match an API route
 // Sends back the React index.html file so React Router can handle the routing
-app.get('/:path*', (req, res) => {
+app.get('(.*)', (req, res) => {
     res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 
@@ -1243,10 +1243,13 @@ app.post('/api/admin/test-email', requireAdmin, async (req, res) => {
     }
 
     try {
-        await transporter.verify();
+        if (!nodemailerTransport) {
+            return res.status(500).json({ error: 'SMTP Transport not initialized' });
+        }
+        await nodemailerTransport.verify();
         console.log('[Debug] SMTP Verify Success');
 
-        await transporter.sendMail({
+        await nodemailerTransport.sendMail({
             from: `"SmartReception Debug" <${sender}>`,
             to: sender,
             subject: 'Debug: SMTP Configuration Works',
