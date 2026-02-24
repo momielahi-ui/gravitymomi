@@ -856,7 +856,10 @@ const ChatDemoView: React.FC<ChatDemoViewProps> = ({ config }) => {
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.error || `Server error: ${res.status}`);
+        const errorMessage = errorData.details
+          ? `${errorData.error}: ${errorData.details}`
+          : (errorData.error || `Server error: ${res.status}`);
+        throw new Error(errorMessage);
       }
 
       const data = await res.json();

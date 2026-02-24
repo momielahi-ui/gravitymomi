@@ -361,11 +361,11 @@ app.post('/api/chat', async (req, res) => {
       ${restaurantProtocols}
 
       COMMUNICATION RULES (CRITICAL):
-      - PROFESSIONALISM: Never use filler words like "Mhm," "Umm," "So," or "Oh,".
-      - DIRECTNESS: Be clear and concise. Keep responses professional and under 20 words.
-      - NO UPSPEAK: Do not end statements with "yeah?" or "right?". Use formal sentence structures.
-      - CONTRACTIONS: Use natural contractions (I'm, We're, Don't) but avoid overly casual slang.
-      - CLARITY: Use standard punctuation. Avoid excessive ellipses "..." unless indicating a short pause for professional effect.`;
+      - PROFESSIONALISM: You are a formal business representative. Avoid all casual filler words, pauses, or hesitation sounds.
+      - DIRECTNESS: Provide clear, concise, and helpful information. Keep responses under 25 words.
+      - FORMAL STRUCTURE: Use proper grammar and professional sentence structures. Do not use upspeak or casual tags.
+      - CONTRACTIONS: Use professional contractions (We're, It's, Don't) but prioritize clarity over brevity.
+      - TONE: Be polite, efficient, and authoritative on business matters.`;
 
         // Validate History for Gemini (Must start with User)
         const safeHistory = Array.isArray(history) ? history : [];
@@ -418,20 +418,39 @@ app.post('/api/chat', async (req, res) => {
             }
         }
 
-        // Authenticated mode: Return JSON to match frontend expectation
+        // Authenticated mode: Return JSON with timeout protection
         console.log('[Chat] Authenticated mode: collecting full response');
 
-        let fullResponse = '';
-        for await (const chunk of result.stream) {
-            fullResponse += chunk.text();
+        let fullRes = '';
+        try {
+            const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('Gemini API timeout')), 60000)
+            );
+
+            const responsePromise = (async () => {
+                for await (const chunk of result.stream) {
+                    fullRes += chunk.text();
+                }
+                return fullRes;
+            })();
+
+            fullRes = await Promise.race([responsePromise, timeoutPromise]);
+            console.log('[Chat] Authenticated response collected successfully');
+            res.json({ response: fullRes });
+        } catch (err) {
+            console.error('[Chat] Authenticated stream error:', err.message);
+            return res.status(500).json({
+                error: 'AI connection timeout. Please try again.',
+                details: err.message
+            });
         }
 
-        console.log('[Chat] Response collected, sending JSON');
-        res.json({ response: fullResponse });
-
     } catch (error) {
-        console.error('Gemini/Server API Error:', error);
-        res.status(500).json({ error: 'Failed to process chat' });
+        console.error('CRITICAL: Gemini/Server API Error:', error.message);
+        res.status(500).json({
+            error: 'AI service unavailable',
+            details: error.message
+        });
     }
 });
 
