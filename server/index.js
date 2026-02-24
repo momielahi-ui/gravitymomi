@@ -1209,7 +1209,7 @@ app.use(express.static(path.join(__dirname, '../dist')));
 
 // Catch-all handler for any request that doesn't match an API route
 // Sends back the React index.html file so React Router can handle the routing
-app.get('(.*)', (req, res) => {
+app.get('/:path*', (req, res) => {
     res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 
