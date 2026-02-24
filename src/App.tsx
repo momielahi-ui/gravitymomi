@@ -795,7 +795,7 @@ interface ChatDemoViewProps {
 }
 
 // ChatDemo now uses authenticatedFetch
-const ChatDemoView: React.FC<ChatDemoViewProps> = ({ config, isDemoMode }) => {
+const ChatDemoView: React.FC<ChatDemoViewProps> = ({ config }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([{ role: 'assistant', content: config.greeting || 'Hello!' }]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -843,8 +843,8 @@ const ChatDemoView: React.FC<ChatDemoViewProps> = ({ config, isDemoMode }) => {
         config: config || {}
       };
 
-      // Use direct fetch for demo mode
-      const fetcher = isDemoMode ? fetch : authenticatedFetch;
+      // Use authenticatedFetch for all requests (including demo mode) to benefit from retry logic
+      const fetcher = authenticatedFetch;
 
       const res = await fetcher(`${API_URL}/chat`, {
         method: 'POST',
@@ -2441,9 +2441,12 @@ const AppShell: React.FC<AppShellProps> = ({ children, onLogout, user, onViewCha
 // Main App
 export default function App() {
   const [session, setSession] = useState<any>(null);
-  const [config, setConfig] = useState<BusinessConfig | null>(null);
+  const [config, setConfig] = useState<BusinessConfig | null>(() => {
+    const saved = localStorage.getItem('demo_config');
+    return saved ? JSON.parse(saved) : null;
+  });
   const [view, setView] = useState('landing'); // landing, loading, auth, onboarding, dashboard, chat-demo, phone-demo, settings
-  const [isDemoMode, setIsDemoMode] = useState(false);
+  const [isDemoMode, setIsDemoMode] = useState(() => localStorage.getItem('is_demo_mode') === 'true');
 
   // Wake up the Render backend on app load to prevent cold-start delays
   useEffect(() => {
@@ -2631,6 +2634,8 @@ export default function App() {
   };
 
   const handleLogout = async () => {
+    localStorage.removeItem('is_demo_mode');
+    localStorage.removeItem('demo_config');
     if (isDemoMode) {
       setIsDemoMode(false);
       setConfig(null);
@@ -2643,8 +2648,11 @@ export default function App() {
   };
 
   const handleTryDemo = () => {
+    localStorage.setItem('is_demo_mode', 'true');
     setIsDemoMode(true);
-    setConfig({} as BusinessConfig); // Empty config starts Onboarding flow
+    const emptyConfig = {} as BusinessConfig;
+    setConfig(emptyConfig); // Empty config starts Onboarding flow
+    localStorage.setItem('demo_config', JSON.stringify(emptyConfig));
     setView('onboarding');
   };
 
